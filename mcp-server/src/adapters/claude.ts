@@ -19,6 +19,8 @@ import {
   ReviewRequest,
   ReviewResult,
   ReviewError,
+  ConsultRequest,
+  ConsultResult,
   registerAdapter,
 } from './base.js';
 import { CliExecutor } from '../executor.js';
@@ -218,6 +220,10 @@ export class ClaudeAdapter implements ReviewerAdapter {
       case 'cli_not_found': return 'Install Claude Code: https://docs.anthropic.com/en/docs/claude-code';
       default: return 'Check the error message and try again';
     }
+  }
+
+  async runConsult(_request: ConsultRequest): Promise<ConsultResult> {
+    throw new Error('runConsult: not yet implemented (Task 6 will replace this stub)');
   }
 }
 

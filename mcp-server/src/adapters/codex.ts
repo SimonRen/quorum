@@ -14,6 +14,8 @@ import {
   ReviewRequest,
   ReviewResult,
   ReviewError,
+  ConsultRequest,
+  ConsultResult,
   registerAdapter,
 } from './base.js';
 import { CliExecutor } from '../executor.js';
@@ -229,6 +231,10 @@ export class CodexAdapter implements ReviewerAdapter {
       case 'cli_not_found': return 'Install with: npm install -g @openai/codex-cli';
       default: return 'Check the error message and try again';
     }
+  }
+
+  async runConsult(_request: ConsultRequest): Promise<ConsultResult> {
+    throw new Error('runConsult: not yet implemented (Task 4 will replace this stub)');
   }
 }
 

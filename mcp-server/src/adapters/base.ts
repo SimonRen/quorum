@@ -73,6 +73,32 @@ export interface ReviewRequest {
 }
 
 // =============================================================================
+// CONSULT REQUEST / RESULT
+// =============================================================================
+
+export interface ConsultRequest {
+  /** Working directory containing the code (always passed) */
+  workingDir: string;
+
+  /** CC-composed, self-contained question for the panel */
+  question: string;
+
+  /** CC-triaged file subset for code-grounded questions; omitted on general questions */
+  relevantFiles?: string[];
+
+  /** Free-form steering from $ARGUMENTS */
+  customPrompt?: string;
+
+  /** Reasoning effort (Codex). Default 'xhigh' for consult (deeper questions). */
+  reasoningEffort?: ReasoningEffort;
+
+  /** Service tier (Codex). Same defaulting rules as ReviewRequest. */
+  serviceTier?: ServiceTier;
+}
+
+export type ConsultResult = ReviewResult;
+
+// =============================================================================
 // EXPERT ROLES (Legacy — used by prompt.ts and src/cli/ wrappers)
 // Active MCP adapters use handoff.ts roles instead.
 // =============================================================================
@@ -173,6 +199,9 @@ export interface ReviewerAdapter {
 
   /** Run a review and return structured output */
   runReview(request: ReviewRequest): Promise<ReviewResult>;
+
+  /** Run a consultation (Q&A) — required on every adapter. */
+  runConsult(request: ConsultRequest): Promise<ConsultResult>;
 
   /**
    * Optional: Run peer review of another model's output
