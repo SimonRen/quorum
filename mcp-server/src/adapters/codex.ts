@@ -248,9 +248,12 @@ export class CodexAdapter implements ReviewerAdapter {
 
     try {
       const prompt = buildConsultPrompt(request);
-      // Consult-specific defaults: xhigh + fast (deeper than runReview's config fallback).
-      const reasoningEffort = request.reasoningEffort ?? 'xhigh';
-      const serviceTier = request.serviceTier ?? 'fast';
+      // Consult-specific defaults live in config (Zod defaults to xhigh + fast).
+      // Request value > config value > Zod default. Users who want to cap cost
+      // can set codex.consultServiceTier: "flex" without touching review.
+      const cfg = getConfig().codex;
+      const reasoningEffort = request.reasoningEffort ?? cfg.consultReasoningEffort;
+      const serviceTier = request.serviceTier ?? cfg.consultServiceTier;
 
       const result = await this.runCli(
         prompt,

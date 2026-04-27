@@ -50,6 +50,8 @@ describe('DEFAULT_CONFIG', () => {
       model: 'gpt-5.5',
       reasoningEffort: 'high',
       serviceTier: 'fast',
+      consultReasoningEffort: 'xhigh',
+      consultServiceTier: 'fast',
       inactivityTimeoutMs: { high: 180_000, xhigh: 300_000 },
       maxTimeoutMs: 3_600_000,
       maxBufferSize: 1_048_576,

@@ -8,6 +8,9 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { mkdirSync, writeFileSync, rmSync } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
 import { setConfigPathForTesting } from '../config.js';
 
 type CapturedArgs = string[];
@@ -106,5 +109,69 @@ describe('CodexAdapter.runConsult — defaults', () => {
     });
 
     expect(findArg(capturedArgs[0], 'model_reasoning_effort=')).toBe('model_reasoning_effort=high');
+  });
+});
+
+describe('CodexAdapter.runConsult — config respect', () => {
+  const fixtureDir = join(tmpdir(), `cc-reviewer-consult-config-${process.pid}`);
+  const fixturePath = join(fixtureDir, 'config.json');
+
+  beforeEach(() => {
+    capturedArgs.length = 0;
+  });
+
+  afterAll(() => {
+    try { rmSync(fixtureDir, { recursive: true, force: true }); } catch { /* ignore */ }
+  });
+
+  it("respects cfg.codex.consultServiceTier when request omits serviceTier", async () => {
+    mkdirSync(fixtureDir, { recursive: true });
+    writeFileSync(fixturePath, JSON.stringify({
+      codex: { consultServiceTier: 'flex' },
+    }), 'utf-8');
+    setConfigPathForTesting(fixturePath);
+
+    const adapter = new CodexAdapter();
+    await adapter.runConsult({
+      workingDir: process.cwd(),
+      question: 'q',
+    });
+
+    expect(findArg(capturedArgs[0], 'service_tier=')).toBe('service_tier=flex');
+  });
+
+  it("respects cfg.codex.consultReasoningEffort when request omits reasoningEffort", async () => {
+    mkdirSync(fixtureDir, { recursive: true });
+    writeFileSync(fixturePath, JSON.stringify({
+      codex: { consultReasoningEffort: 'high' },
+    }), 'utf-8');
+    setConfigPathForTesting(fixturePath);
+
+    const adapter = new CodexAdapter();
+    await adapter.runConsult({
+      workingDir: process.cwd(),
+      question: 'q',
+    });
+
+    expect(findArg(capturedArgs[0], 'model_reasoning_effort=')).toBe('model_reasoning_effort=high');
+  });
+
+  it('explicit request value still overrides config', async () => {
+    mkdirSync(fixtureDir, { recursive: true });
+    writeFileSync(fixturePath, JSON.stringify({
+      codex: { consultServiceTier: 'flex', consultReasoningEffort: 'high' },
+    }), 'utf-8');
+    setConfigPathForTesting(fixturePath);
+
+    const adapter = new CodexAdapter();
+    await adapter.runConsult({
+      workingDir: process.cwd(),
+      question: 'q',
+      serviceTier: 'fast',
+      reasoningEffort: 'xhigh',
+    });
+
+    expect(findArg(capturedArgs[0], 'service_tier=')).toBe('service_tier=fast');
+    expect(findArg(capturedArgs[0], 'model_reasoning_effort=')).toBe('model_reasoning_effort=xhigh');
   });
 });
