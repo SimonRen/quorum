@@ -24,12 +24,9 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import {
-  handleCodexReview,
-  handleGeminiReview,
-  handleClaudeReview,
   handleMultiReview,
   ReviewInputSchema,
-  TOOL_DEFINITIONS
+  TOOL_DEFINITIONS,
 } from './tools/feedback.js';
 import {
   handleMultiConsult,
@@ -85,9 +82,6 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
-      TOOL_DEFINITIONS.codex_review,
-      TOOL_DEFINITIONS.gemini_review,
-      TOOL_DEFINITIONS.claude_review,
       TOOL_DEFINITIONS.multi_review,
       MULTI_CONSULT_TOOL_DEFINITION,
     ],
@@ -100,21 +94,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     switch (name) {
-      case 'codex_review': {
-        const input = ReviewInputSchema.parse(args);
-        return await handleCodexReview(input);
-      }
-
-      case 'gemini_review': {
-        const input = ReviewInputSchema.parse(args);
-        return await handleGeminiReview(input);
-      }
-
-      case 'claude_review': {
-        const input = ReviewInputSchema.parse(args);
-        return await handleClaudeReview(input);
-      }
-
       case 'multi_review': {
         const input = ReviewInputSchema.parse(args);
         return await handleMultiReview(input);
