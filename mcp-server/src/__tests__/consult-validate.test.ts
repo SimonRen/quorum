@@ -51,4 +51,44 @@ describe('validateConsultSections', () => {
     const trailing = goodOutput.replace('## Recommendation', '## Recommendation  ');
     expect(validateConsultSections(trailing).missing).toEqual([]);
   });
+
+  it('accepts headers with trailing colon (## Recommendation:)', () => {
+    const colon = goodOutput.replace('## Recommendation', '## Recommendation:');
+    expect(validateConsultSections(colon).missing).toEqual([]);
+  });
+
+  it('accepts headers with em-dash continuation (## Recommendation — Postgres)', () => {
+    const dash = goodOutput.replace('## Recommendation', '## Recommendation — Postgres');
+    expect(validateConsultSections(dash).missing).toEqual([]);
+  });
+
+  it('does NOT match headers nested inside fenced code blocks', () => {
+    // A model that returns only a fenced example skeleton must be flagged as drifted.
+    const fenced = [
+      'Here is what your output should look like:',
+      '',
+      '```markdown',
+      '## Recommendation',
+      'foo',
+      '## Reasoning',
+      'bar',
+      '## Tradeoffs',
+      'baz',
+      '## Risks',
+      'r',
+      '## Open questions for the asker',
+      'None.',
+      '```',
+      '',
+      'Now I have to think about it.',
+    ].join('\n');
+
+    const result = validateConsultSections(fenced).missing;
+    // All 5 headers are inside the fence — none should count.
+    expect(result).toContain('Recommendation');
+    expect(result).toContain('Reasoning');
+    expect(result).toContain('Tradeoffs');
+    expect(result).toContain('Risks');
+    expect(result).toContain('Open questions for the asker');
+  });
 });

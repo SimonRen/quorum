@@ -26,17 +26,27 @@ export interface SectionValidation {
 }
 
 /**
- * Lightweight regex check for the 5 expected `## …` headers in a model's
- * consult response. Headers must be at line start, exact case, optionally
- * followed by whitespace. Anything weaker (`**Recommendation**`,
- * `## RECOMMENDATION`) counts as missing — that's the signal we want CC
- * to see when models drift.
+ * Lightweight check for the 5 expected `## …` headers in a model's consult
+ * response. Behaviors:
+ * - Strips fenced code blocks first so a quoted format-example skeleton
+ *   doesn't falsely satisfy the check.
+ * - Requires the section name as a word boundary at the start of an H2 line,
+ *   but tolerates trailing decoration (colon, em-dash continuation, etc.).
+ * - Case-sensitive on the section name. Bare bold (`**Recommendation**`),
+ *   wrong level (`### Recommendation`), and ALL-CAPS variants all count as
+ *   missing — that's the signal we want CC to see when models drift.
  */
 export function validateConsultSections(output: string): SectionValidation {
+  // Remove fenced code blocks so headers inside them don't satisfy the regex.
+  const stripped = output.replace(/```[\s\S]*?```/g, '');
+
   const missing: string[] = [];
   for (const section of REQUIRED_SECTIONS) {
-    const pattern = new RegExp(`^##\\s+${escapeRegex(section)}\\s*$`, 'm');
-    if (!pattern.test(output)) {
+    // Match the exact section name at the start of an H2 header line.
+    // `\b` after the name allows `:`, `—`, `-`, whitespace+more — but not
+    // suffixed letters/digits (which would change the section name itself).
+    const pattern = new RegExp(`^##\\s+${escapeRegex(section)}\\b[^\\n]*$`, 'm');
+    if (!pattern.test(stripped)) {
       missing.push(section);
     }
   }
