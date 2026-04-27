@@ -19,6 +19,10 @@ export declare function getCommandPaths(): {
 /**
  * Install slash commands to ~/.claude/commands/
  *
+ * @param overrides Test-only path overrides; production callers pass nothing.
  * @returns Result object with success status and installed commands
  */
-export declare function installCommands(): InstallResult;
+export declare function installCommands(overrides?: Partial<{
+    source: string;
+    target: string;
+}>): InstallResult;

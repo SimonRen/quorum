@@ -17,6 +17,11 @@ export declare const CodexConfigSchema: z.ZodDefault<z.ZodObject<{
     model: z.ZodDefault<z.ZodString>;
     reasoningEffort: z.ZodDefault<z.ZodEnum<["high", "xhigh"]>>;
     serviceTier: z.ZodDefault<z.ZodEnum<["default", "fast", "flex"]>>;
+    /** Consult-specific defaults — separate from review knobs because consult
+     * questions are deeper and warrant more reasoning. Users can override
+     * these to cap cost without affecting review behavior. */
+    consultReasoningEffort: z.ZodDefault<z.ZodEnum<["high", "xhigh"]>>;
+    consultServiceTier: z.ZodDefault<z.ZodEnum<["default", "fast", "flex"]>>;
     inactivityTimeoutMs: z.ZodDefault<z.ZodObject<{
         high: z.ZodDefault<z.ZodNumber>;
         xhigh: z.ZodDefault<z.ZodNumber>;
@@ -33,6 +38,8 @@ export declare const CodexConfigSchema: z.ZodDefault<z.ZodObject<{
     model: string;
     reasoningEffort: "high" | "xhigh";
     serviceTier: "default" | "fast" | "flex";
+    consultReasoningEffort: "high" | "xhigh";
+    consultServiceTier: "default" | "fast" | "flex";
     inactivityTimeoutMs: {
         high: number;
         xhigh: number;
@@ -43,6 +50,8 @@ export declare const CodexConfigSchema: z.ZodDefault<z.ZodObject<{
     model?: string | undefined;
     reasoningEffort?: "high" | "xhigh" | undefined;
     serviceTier?: "default" | "fast" | "flex" | undefined;
+    consultReasoningEffort?: "high" | "xhigh" | undefined;
+    consultServiceTier?: "default" | "fast" | "flex" | undefined;
     inactivityTimeoutMs?: {
         high?: number | undefined;
         xhigh?: number | undefined;
@@ -87,6 +96,11 @@ export declare const ConfigSchema: z.ZodDefault<z.ZodObject<{
         model: z.ZodDefault<z.ZodString>;
         reasoningEffort: z.ZodDefault<z.ZodEnum<["high", "xhigh"]>>;
         serviceTier: z.ZodDefault<z.ZodEnum<["default", "fast", "flex"]>>;
+        /** Consult-specific defaults — separate from review knobs because consult
+         * questions are deeper and warrant more reasoning. Users can override
+         * these to cap cost without affecting review behavior. */
+        consultReasoningEffort: z.ZodDefault<z.ZodEnum<["high", "xhigh"]>>;
+        consultServiceTier: z.ZodDefault<z.ZodEnum<["default", "fast", "flex"]>>;
         inactivityTimeoutMs: z.ZodDefault<z.ZodObject<{
             high: z.ZodDefault<z.ZodNumber>;
             xhigh: z.ZodDefault<z.ZodNumber>;
@@ -103,6 +117,8 @@ export declare const ConfigSchema: z.ZodDefault<z.ZodObject<{
         model: string;
         reasoningEffort: "high" | "xhigh";
         serviceTier: "default" | "fast" | "flex";
+        consultReasoningEffort: "high" | "xhigh";
+        consultServiceTier: "default" | "fast" | "flex";
         inactivityTimeoutMs: {
             high: number;
             xhigh: number;
@@ -113,6 +129,8 @@ export declare const ConfigSchema: z.ZodDefault<z.ZodObject<{
         model?: string | undefined;
         reasoningEffort?: "high" | "xhigh" | undefined;
         serviceTier?: "default" | "fast" | "flex" | undefined;
+        consultReasoningEffort?: "high" | "xhigh" | undefined;
+        consultServiceTier?: "default" | "fast" | "flex" | undefined;
         inactivityTimeoutMs?: {
             high?: number | undefined;
             xhigh?: number | undefined;
@@ -157,6 +175,8 @@ export declare const ConfigSchema: z.ZodDefault<z.ZodObject<{
         model: string;
         reasoningEffort: "high" | "xhigh";
         serviceTier: "default" | "fast" | "flex";
+        consultReasoningEffort: "high" | "xhigh";
+        consultServiceTier: "default" | "fast" | "flex";
         inactivityTimeoutMs: {
             high: number;
             xhigh: number;
@@ -181,6 +201,8 @@ export declare const ConfigSchema: z.ZodDefault<z.ZodObject<{
         model?: string | undefined;
         reasoningEffort?: "high" | "xhigh" | undefined;
         serviceTier?: "default" | "fast" | "flex" | undefined;
+        consultReasoningEffort?: "high" | "xhigh" | undefined;
+        consultServiceTier?: "default" | "fast" | "flex" | undefined;
         inactivityTimeoutMs?: {
             high?: number | undefined;
             xhigh?: number | undefined;

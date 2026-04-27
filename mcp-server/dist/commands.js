@@ -3,7 +3,7 @@
  *
  * Used by index.ts (auto-install on MCP server startup and `update` subcommand)
  */
-import { existsSync, mkdirSync, copyFileSync, readdirSync, statSync, unlinkSync } from 'fs';
+import { existsSync, mkdirSync, copyFileSync, readdirSync, renameSync, statSync } from 'fs';
 import { join, dirname } from 'path';
 import { homedir } from 'os';
 import { fileURLToPath } from 'url';
@@ -37,10 +37,13 @@ export function getCommandPaths() {
 /**
  * Install slash commands to ~/.claude/commands/
  *
+ * @param overrides Test-only path overrides; production callers pass nothing.
  * @returns Result object with success status and installed commands
  */
-export function installCommands() {
-    const { source, target } = getCommandPaths();
+export function installCommands(overrides) {
+    const defaults = getCommandPaths();
+    const source = overrides?.source ?? defaults.source;
+    const target = overrides?.target ?? defaults.target;
     // Check source exists
     if (!existsSync(source)) {
         return { success: false, installed: [], removed: [], error: 'Commands directory not found' };
@@ -64,13 +67,21 @@ export function installCommands() {
     if (files.length === 0) {
         return { success: false, installed: [], removed: [], error: 'No command files found' };
     }
-    // Prune deprecated commands from target
+    // Prune deprecated commands from target by renaming to .deprecated.bak
+    // (lossless — preserves any user edits the operator may have made). If the
+    // backup already exists from a previous upgrade, leave it alone.
     const removed = [];
     for (const oldFile of DEPRECATED_COMMANDS) {
         const oldPath = join(target, oldFile);
         if (existsSync(oldPath)) {
+            const backupPath = `${oldPath}.deprecated.bak`;
             try {
-                unlinkSync(oldPath);
+                if (!existsSync(backupPath)) {
+                    renameSync(oldPath, backupPath);
+                }
+                // If the backup already exists, the original was already moved on a
+                // prior install. The file we see now must be a recreation; leave it
+                // alone — the user clearly wants it.
                 removed.push(oldFile.replace('.md', ''));
             }
             catch {

@@ -95,13 +95,12 @@ User has a question → User: /multi-consult → External CLIs answer → CC syn
 
 ## MCP Tools
 
-The plugin exposes three MCP tools:
+The plugin exposes two MCP tools:
 
 | Tool | Description |
 |------|-------------|
-| `codex_review` | Get Codex review (correctness, edge cases, performance) |
-| `gemini_review` | Get Gemini review (design patterns, scalability, tech debt) |
-| `multi_review` | Parallel review from both models |
+| `multi_review` | Parallel standard + adversarial review from all available CLIs (Codex, Gemini, Claude). Requires `ccOutput`. |
+| `multi_consult` | Ask all available CLIs the same question and receive a 5-section structured response per model. For consultation/Q&A. |
 
 ## Output Format
 

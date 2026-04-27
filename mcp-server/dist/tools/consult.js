@@ -5,7 +5,61 @@
  * Returns each model's structured 5-section response to CC for synthesis.
  */
 import { z } from 'zod';
+import { realpathSync } from 'fs';
+import { resolve, sep } from 'path';
+import { homedir } from 'os';
 import { getAvailableAdapters } from '../adapters/index.js';
+// =============================================================================
+// SENSITIVE PATH GUARD
+// =============================================================================
+/**
+ * Returns the directory's *canonical* absolute path if it's safe to use as a
+ * workingDir, or null if it resolves to a sensitive system location. We deny
+ * roots like `/`, `/etc`, `~`, `~/.ssh`, etc. — paths *inside* a project root
+ * are fine. The check resolves symlinks via realpath so a symlinked alias of
+ * a sensitive directory is also caught.
+ */
+export function checkSensitiveWorkingDir(input) {
+    let resolved;
+    try {
+        // realpath if it exists; otherwise fall back to resolve() so the standard
+        // adapter cwd-existence check produces the user-visible error.
+        resolved = realpathSync(input);
+    }
+    catch {
+        resolved = resolve(input);
+    }
+    const home = homedir();
+    const rawDenylist = [
+        '/',
+        '/etc',
+        '/var',
+        '/usr',
+        '/bin',
+        '/sbin',
+        '/boot',
+        '/root',
+        home,
+        `${home}${sep}.ssh`,
+        `${home}${sep}.aws`,
+        `${home}${sep}.config`,
+        `${home}${sep}.gnupg`,
+    ];
+    // Resolve denylist symlinks too (e.g. macOS /etc -> /private/etc) so the
+    // resolved-path comparison hits regardless of symlink direction.
+    const denylist = new Set();
+    for (const path of rawDenylist) {
+        denylist.add(path);
+        try {
+            denylist.add(realpathSync(path));
+        }
+        catch { /* ignore — path doesn't exist */ }
+    }
+    if (denylist.has(resolved)) {
+        return { ok: false, reason: `workingDir resolves to a sensitive path: ${resolved}` };
+    }
+    return { ok: true, resolved };
+}
 // =============================================================================
 // SECTION VALIDATION
 // =============================================================================
@@ -17,17 +71,26 @@ const REQUIRED_SECTIONS = [
     'Open questions for the asker',
 ];
 /**
- * Lightweight regex check for the 5 expected `## …` headers in a model's
- * consult response. Headers must be at line start, exact case, optionally
- * followed by whitespace. Anything weaker (`**Recommendation**`,
- * `## RECOMMENDATION`) counts as missing — that's the signal we want CC
- * to see when models drift.
+ * Lightweight check for the 5 expected `## …` headers in a model's consult
+ * response. Behaviors:
+ * - Strips fenced code blocks first so a quoted format-example skeleton
+ *   doesn't falsely satisfy the check.
+ * - Requires the section name as a word boundary at the start of an H2 line,
+ *   but tolerates trailing decoration (colon, em-dash continuation, etc.).
+ * - Case-sensitive on the section name. Bare bold (`**Recommendation**`),
+ *   wrong level (`### Recommendation`), and ALL-CAPS variants all count as
+ *   missing — that's the signal we want CC to see when models drift.
  */
 export function validateConsultSections(output) {
+    // Remove fenced code blocks so headers inside them don't satisfy the regex.
+    const stripped = output.replace(/```[\s\S]*?```/g, '');
     const missing = [];
     for (const section of REQUIRED_SECTIONS) {
-        const pattern = new RegExp(`^##\\s+${escapeRegex(section)}\\s*$`, 'm');
-        if (!pattern.test(output)) {
+        // Match the exact section name at the start of an H2 header line.
+        // `\b` after the name allows `:`, `—`, `-`, whitespace+more — but not
+        // suffixed letters/digits (which would change the section name itself).
+        const pattern = new RegExp(`^##\\s+${escapeRegex(section)}\\b[^\\n]*$`, 'm');
+        if (!pattern.test(stripped)) {
             missing.push(section);
         }
     }
@@ -43,7 +106,14 @@ export const ConsultInputSchema = z.object({
     workingDir: z.string().describe('Working directory for the CLI to operate in'),
     question: z.string().describe('CC-composed self-contained question for the panel'),
     relevantFiles: z.array(z.string()).optional().describe('CC-triaged file subset for code-grounded questions'),
-    customPrompt: z.string().optional().describe('Free-form steering from $ARGUMENTS'),
+    customPrompt: z.string()
+        .optional()
+        // Reject any literal `<user-steering` or `</user-steering` so a steering
+        // value cannot escape the prompt envelope and inject instructions.
+        .refine(v => !v || !/<\/?user-steering/i.test(v), {
+        message: 'customPrompt must not contain <user-steering> tags',
+    })
+        .describe('Free-form steering from $ARGUMENTS'),
     reasoningEffort: z.enum(['high', 'xhigh']).optional().describe("Codex reasoning effort (default: 'xhigh' for consult)"),
     serviceTier: z.enum(['default', 'fast', 'flex']).optional().describe("Codex service tier (default: 'fast')"),
 });
@@ -76,6 +146,17 @@ function formatOutcome(outcome) {
     return `## ${name}\n**Execution Time:** ${(result.executionTimeMs / 1000).toFixed(1)}s\n\n${driftLine}${result.output}`;
 }
 export async function handleMultiConsult(input) {
+    // Sensitive-cwd guard runs before any adapter dispatch — direct MCP callers
+    // can't bypass the slash-command body's refusal by skipping CC.
+    const guard = checkSensitiveWorkingDir(input.workingDir);
+    if (!guard.ok) {
+        return {
+            content: [{
+                    type: 'text',
+                    text: `❌ Refused: ${guard.reason}\n\nInvoke /multi-consult from a project root, not a sensitive system path.`,
+                }],
+        };
+    }
     const request = toConsultRequest(input);
     const adapters = await getAvailableAdapters();
     if (adapters.length === 0) {

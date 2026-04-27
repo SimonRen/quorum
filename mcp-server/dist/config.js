@@ -24,6 +24,11 @@ export const CodexConfigSchema = z
     model: z.string().default('gpt-5.5'),
     reasoningEffort: z.enum(['high', 'xhigh']).default('high'),
     serviceTier: z.enum(['default', 'fast', 'flex']).default('fast'),
+    /** Consult-specific defaults — separate from review knobs because consult
+     * questions are deeper and warrant more reasoning. Users can override
+     * these to cap cost without affecting review behavior. */
+    consultReasoningEffort: z.enum(['high', 'xhigh']).default('xhigh'),
+    consultServiceTier: z.enum(['default', 'fast', 'flex']).default('fast'),
     inactivityTimeoutMs: z
         .object({
         high: z.number().int().positive().default(180_000),
