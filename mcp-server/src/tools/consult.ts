@@ -120,7 +120,14 @@ export const ConsultInputSchema = z.object({
   workingDir: z.string().describe('Working directory for the CLI to operate in'),
   question: z.string().describe('CC-composed self-contained question for the panel'),
   relevantFiles: z.array(z.string()).optional().describe('CC-triaged file subset for code-grounded questions'),
-  customPrompt: z.string().optional().describe('Free-form steering from $ARGUMENTS'),
+  customPrompt: z.string()
+    .optional()
+    // Reject any literal `<user-steering` or `</user-steering` so a steering
+    // value cannot escape the prompt envelope and inject instructions.
+    .refine(v => !v || !/<\/?user-steering/i.test(v), {
+      message: 'customPrompt must not contain <user-steering> tags',
+    })
+    .describe('Free-form steering from $ARGUMENTS'),
   reasoningEffort: z.enum(['high', 'xhigh']).optional().describe("Codex reasoning effort (default: 'xhigh' for consult)"),
   serviceTier: z.enum(['default', 'fast', 'flex']).optional().describe("Codex service tier (default: 'fast')"),
 });
