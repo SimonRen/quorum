@@ -27,6 +27,7 @@ import {
   selectRole,
   FocusArea,
 } from '../handoff.js';
+import { buildConsultPrompt } from '../consult-prompt.js';
 import { getConfig } from '../config.js';
 
 // =============================================================================
@@ -233,8 +234,49 @@ export class CodexAdapter implements ReviewerAdapter {
     }
   }
 
-  async runConsult(_request: ConsultRequest): Promise<ConsultResult> {
-    throw new Error('runConsult: not yet implemented (Task 4 will replace this stub)');
+  async runConsult(request: ConsultRequest): Promise<ConsultResult> {
+    const startTime = Date.now();
+
+    if (!existsSync(request.workingDir)) {
+      return {
+        success: false,
+        error: { type: 'cli_error', message: `Working directory does not exist: ${request.workingDir}` },
+        suggestion: 'Check that the working directory path is correct',
+        executionTimeMs: Date.now() - startTime,
+      };
+    }
+
+    try {
+      const prompt = buildConsultPrompt(request);
+      // Consult-specific defaults: xhigh + fast (deeper than runReview's config fallback).
+      const reasoningEffort = request.reasoningEffort ?? 'xhigh';
+      const serviceTier = request.serviceTier ?? 'fast';
+
+      const result = await this.runCli(
+        prompt,
+        request.workingDir,
+        reasoningEffort,
+        serviceTier,
+      );
+
+      if (result.exitCode !== 0) {
+        const error = this.categorizeError(result.stderr);
+        return { success: false, error, suggestion: this.getSuggestion(error), executionTimeMs: Date.now() - startTime };
+      }
+
+      if (!result.stdout.trim()) {
+        return {
+          success: false,
+          error: { type: 'cli_error', message: 'Codex returned empty response' },
+          suggestion: 'Try again or use /gemini-review instead',
+          executionTimeMs: Date.now() - startTime,
+        };
+      }
+
+      return { success: true, output: result.stdout, executionTimeMs: Date.now() - startTime };
+    } catch (error) {
+      return this.handleException(error, startTime);
+    }
   }
 }
 
