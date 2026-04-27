@@ -32,6 +32,7 @@ import {
   selectRole,
   FocusArea,
 } from '../handoff.js';
+import { buildConsultPrompt } from '../consult-prompt.js';
 import { getConfig } from '../config.js';
 
 // Write tools explicitly blocked as defense-in-depth
@@ -222,8 +223,40 @@ export class ClaudeAdapter implements ReviewerAdapter {
     }
   }
 
-  async runConsult(_request: ConsultRequest): Promise<ConsultResult> {
-    throw new Error('runConsult: not yet implemented (Task 6 will replace this stub)');
+  async runConsult(request: ConsultRequest): Promise<ConsultResult> {
+    const startTime = Date.now();
+
+    if (!existsSync(request.workingDir)) {
+      return {
+        success: false,
+        error: { type: 'cli_error', message: `Working directory does not exist: ${request.workingDir}` },
+        suggestion: 'Check that the working directory path is correct',
+        executionTimeMs: Date.now() - startTime,
+      };
+    }
+
+    try {
+      const prompt = buildConsultPrompt(request);
+      const result = await this.runCli(prompt, request.workingDir);
+
+      if (result.exitCode !== 0) {
+        const error = this.categorizeError(result.stderr);
+        return { success: false, error, suggestion: this.getSuggestion(error), executionTimeMs: Date.now() - startTime };
+      }
+
+      if (!result.stdout.trim()) {
+        return {
+          success: false,
+          error: { type: 'cli_error', message: 'Claude returned empty response' },
+          suggestion: 'Try again or use /codex-review instead',
+          executionTimeMs: Date.now() - startTime,
+        };
+      }
+
+      return { success: true, output: result.stdout, executionTimeMs: Date.now() - startTime };
+    } catch (error) {
+      return this.handleException(error, startTime);
+    }
   }
 }
 
