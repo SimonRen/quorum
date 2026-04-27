@@ -11,6 +11,7 @@ import { registerAdapter, } from './base.js';
 import { CliExecutor } from '../executor.js';
 import { GeminiEventDecoder } from '../decoders/index.js';
 import { buildSimpleHandoff, buildHandoffPrompt, buildAdversarialHandoffPrompt, selectRole, } from '../handoff.js';
+import { buildConsultPrompt } from '../consult-prompt.js';
 import { getConfig } from '../config.js';
 // =============================================================================
 // GEMINI ADAPTER
@@ -69,7 +70,7 @@ export class GeminiAdapter {
                 return {
                     success: false,
                     error: { type: 'cli_error', message: 'Gemini returned empty response' },
-                    suggestion: 'Try again or use /codex-review instead',
+                    suggestion: 'Try again or use /multi-review instead',
                     executionTimeMs: Date.now() - startTime,
                 };
             }
@@ -133,7 +134,7 @@ export class GeminiAdapter {
         }
         if (err.message === 'TIMEOUT') {
             return { success: false, error: { type: 'timeout', message: 'Gemini timed out — no events received' },
-                suggestion: 'Try a smaller scope or use /codex-review', executionTimeMs: Date.now() - startTime };
+                suggestion: 'Try a smaller scope or use /multi-review', executionTimeMs: Date.now() - startTime };
         }
         if (err.message === 'MAX_TIMEOUT') {
             return { success: false, error: { type: 'timeout', message: 'Task exceeded 60 minute maximum' },
@@ -153,10 +154,41 @@ export class GeminiAdapter {
     }
     getSuggestion(error) {
         switch (error.type) {
-            case 'rate_limit': return 'Wait and retry, or use /codex-review instead';
+            case 'rate_limit': return 'Wait and retry, or use /multi-review instead';
             case 'auth_error': return 'Run `gemini` and follow auth prompts, or set GEMINI_API_KEY';
             case 'cli_not_found': return 'Install with: npm install -g @google/gemini-cli';
             default: return 'Check the error message and try again';
+        }
+    }
+    async runConsult(request) {
+        const startTime = Date.now();
+        if (!existsSync(request.workingDir)) {
+            return {
+                success: false,
+                error: { type: 'cli_error', message: `Working directory does not exist: ${request.workingDir}` },
+                suggestion: 'Check that the working directory path is correct',
+                executionTimeMs: Date.now() - startTime,
+            };
+        }
+        try {
+            const prompt = buildConsultPrompt(request);
+            const result = await this.runCli(prompt, request.workingDir);
+            if (result.exitCode !== 0) {
+                const error = this.categorizeError(result.stderr);
+                return { success: false, error, suggestion: this.getSuggestion(error), executionTimeMs: Date.now() - startTime };
+            }
+            if (!result.stdout.trim()) {
+                return {
+                    success: false,
+                    error: { type: 'cli_error', message: 'Gemini returned empty response' },
+                    suggestion: 'Try again or use /multi-review instead',
+                    executionTimeMs: Date.now() - startTime,
+                };
+            }
+            return { success: true, output: result.stdout, executionTimeMs: Date.now() - startTime };
+        }
+        catch (error) {
+            return this.handleException(error, startTime);
         }
     }
 }

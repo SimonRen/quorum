@@ -101,7 +101,7 @@ export class CodexAdapter implements ReviewerAdapter {
         return {
           success: false,
           error: { type: 'cli_error', message: 'Codex returned empty response' },
-          suggestion: 'Try again or use /gemini-review instead',
+          suggestion: 'Try again or use /multi-review instead',
           executionTimeMs: Date.now() - startTime,
         };
       }
@@ -202,7 +202,7 @@ export class CodexAdapter implements ReviewerAdapter {
     }
     if (err.message === 'TIMEOUT') {
       return { success: false, error: { type: 'timeout', message: 'Codex timed out — no events received' },
-        suggestion: 'Try a smaller scope or use /gemini-review', executionTimeMs: Date.now() - startTime };
+        suggestion: 'Try a smaller scope or use /multi-review', executionTimeMs: Date.now() - startTime };
     }
     if (err.message === 'MAX_TIMEOUT') {
       return { success: false, error: { type: 'timeout', message: 'Task exceeded 60 minute maximum' },
@@ -227,7 +227,7 @@ export class CodexAdapter implements ReviewerAdapter {
 
   private getSuggestion(error: ReviewError): string {
     switch (error.type) {
-      case 'rate_limit': return 'Wait and retry, or use /gemini-review instead';
+      case 'rate_limit': return 'Wait and retry, or use /multi-review instead';
       case 'auth_error': return 'Run `codex login` to authenticate';
       case 'cli_not_found': return 'Install with: npm install -g @openai/codex-cli';
       default: return 'Check the error message and try again';
@@ -268,7 +268,7 @@ export class CodexAdapter implements ReviewerAdapter {
         return {
           success: false,
           error: { type: 'cli_error', message: 'Codex returned empty response' },
-          suggestion: 'Try again or use /gemini-review instead',
+          suggestion: 'Try again or use /multi-review instead',
           executionTimeMs: Date.now() - startTime,
         };
       }

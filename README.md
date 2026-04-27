@@ -11,7 +11,7 @@ claude mcp add -s user cc-reviewer -- npx -y cc-reviewer
 
 **Step 2: Restart Claude Code**
 
-The MCP tools and slash commands (`/codex-review`, `/gemini-review`, `/multi-review`) are automatically installed.
+The MCP tools and slash commands (`/multi-review`, `/multi-consult`) are automatically installed.
 
 **Manual command install** (if needed):
 ```bash
@@ -52,10 +52,8 @@ gemini  # follow auth prompts
 These tools provide **external second-opinion reviews** from Codex and Gemini CLIs. They are designed to complement Claude Code's native review capabilities, not replace them.
 
 **When to use:**
-- `/codex-review` or "review with codex" - Get external Codex review
-- `/codex-xhigh-review` - Deep-thinking Codex review with xhigh reasoning
-- `/gemini-review` or "review with gemini" - Get external Gemini review
-- `/multi-review` - Get parallel reviews from both CLIs
+- `/multi-review` - Get parallel standard + adversarial reviews from all available CLIs (Codex, Gemini, Claude). For reviewing CC-produced work (plan, findings, code).
+- `/multi-consult` - Ask all available CLIs the same question and synthesize their answers. For consultation/Q&A — what's the best approach, how to solve X.
 
 **For regular reviews:** Just say "review" and Claude Code will use its native capabilities. These external tools are only invoked when explicitly requested.
 
@@ -64,18 +62,17 @@ These tools provide **external second-opinion reviews** from Codex and Gemini CL
 These commands are available after restart:
 
 ```bash
-/codex-review             # Review with Codex
-/codex-review security    # Focus on security
-/codex-xhigh-review       # Codex with xhigh reasoning effort
-/gemini-review            # Review with Gemini
-/gemini-review architecture # Focus on architecture
-/multi-review             # Both models in parallel
+/multi-review                          # Parallel standard + adversarial reviews from all CLIs
+/multi-review focus on race conditions # Steer the adversarial focus
+/multi-consult <question>              # Ask all CLIs and synthesize
+/multi-consult <question> [flex]       # Use Codex flex tier (cheaper/slower)
 ```
 
 ## How It Works
 
 ```
-CC does work → User: /codex-review → External CLI reviews → CC synthesizes → Updated output
+CC does work → User: /multi-review → External CLIs review → CC synthesizes → Final output
+User has a question → User: /multi-consult → External CLIs answer → CC synthesizes → Consolidated answer
 ```
 
 **Key Principles:**

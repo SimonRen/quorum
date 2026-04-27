@@ -29,6 +29,11 @@ const DEPRECATED_COMMANDS = [
   'ask-gemini.md',
   'ask-multi.md',
   'multi-review-adv.md',
+  // Removed in favor of /multi-review and /multi-consult only:
+  'codex-review.md',
+  'codex-xhigh-review.md',
+  'gemini-review.md',
+  'claude-review.md',
 ];
 
 /**

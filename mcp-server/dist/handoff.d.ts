@@ -22,16 +22,16 @@ export declare const UncertaintySchema: z.ZodObject<{
     relevantFiles: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     severity: z.ZodOptional<z.ZodEnum<["critical", "important", "minor"]>>;
 }, "strip", z.ZodTypeAny, {
-    topic: string;
     question: string;
-    severity?: "critical" | "important" | "minor" | undefined;
+    topic: string;
     relevantFiles?: string[] | undefined;
+    severity?: "critical" | "important" | "minor" | undefined;
     ccAssumption?: string | undefined;
 }, {
-    topic: string;
     question: string;
-    severity?: "critical" | "important" | "minor" | undefined;
+    topic: string;
     relevantFiles?: string[] | undefined;
+    severity?: "critical" | "important" | "minor" | undefined;
     ccAssumption?: string | undefined;
 }>;
 export type Uncertainty = z.infer<typeof UncertaintySchema>;
@@ -86,16 +86,16 @@ export declare const HandoffSchema: z.ZodObject<{
         relevantFiles: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
         severity: z.ZodOptional<z.ZodEnum<["critical", "important", "minor"]>>;
     }, "strip", z.ZodTypeAny, {
-        topic: string;
         question: string;
-        severity?: "critical" | "important" | "minor" | undefined;
+        topic: string;
         relevantFiles?: string[] | undefined;
+        severity?: "critical" | "important" | "minor" | undefined;
         ccAssumption?: string | undefined;
     }, {
-        topic: string;
         question: string;
-        severity?: "critical" | "important" | "minor" | undefined;
+        topic: string;
         relevantFiles?: string[] | undefined;
+        severity?: "critical" | "important" | "minor" | undefined;
         ccAssumption?: string | undefined;
     }>, "many">>;
     decisions: z.ZodOptional<z.ZodArray<z.ZodObject<{
@@ -132,14 +132,14 @@ export declare const HandoffSchema: z.ZodObject<{
     confidence: z.ZodOptional<z.ZodNumber>;
     customInstructions: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
-    summary: string;
     workingDir: string;
+    summary: string;
     confidence?: number | undefined;
     uncertainties?: {
-        topic: string;
         question: string;
-        severity?: "critical" | "important" | "minor" | undefined;
+        topic: string;
         relevantFiles?: string[] | undefined;
+        severity?: "critical" | "important" | "minor" | undefined;
         ccAssumption?: string | undefined;
     }[] | undefined;
     decisions?: {
@@ -157,14 +157,14 @@ export declare const HandoffSchema: z.ZodObject<{
     customInstructions?: string | undefined;
     priorityFiles?: string[] | undefined;
 }, {
-    summary: string;
     workingDir: string;
+    summary: string;
     confidence?: number | undefined;
     uncertainties?: {
-        topic: string;
         question: string;
-        severity?: "critical" | "important" | "minor" | undefined;
+        topic: string;
         relevantFiles?: string[] | undefined;
+        severity?: "critical" | "important" | "minor" | undefined;
         ccAssumption?: string | undefined;
     }[] | undefined;
     decisions?: {

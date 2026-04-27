@@ -5,7 +5,7 @@
  * Returns raw text — no JSON parsing or schema enforcement.
  * CC handles interpretation of the reviewer's response.
  */
-import { ReviewerAdapter, ReviewerCapabilities, ReviewRequest, ReviewResult } from './base.js';
+import { ReviewerAdapter, ReviewerCapabilities, ReviewRequest, ReviewResult, ConsultRequest, ConsultResult } from './base.js';
 export declare class GeminiAdapter implements ReviewerAdapter {
     readonly id = "gemini";
     getCapabilities(): ReviewerCapabilities;
@@ -15,5 +15,6 @@ export declare class GeminiAdapter implements ReviewerAdapter {
     private handleException;
     private categorizeError;
     private getSuggestion;
+    runConsult(request: ConsultRequest): Promise<ConsultResult>;
 }
 export declare const geminiAdapter: GeminiAdapter;

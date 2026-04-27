@@ -95,7 +95,7 @@ export class GeminiAdapter implements ReviewerAdapter {
         return {
           success: false,
           error: { type: 'cli_error', message: 'Gemini returned empty response' },
-          suggestion: 'Try again or use /codex-review instead',
+          suggestion: 'Try again or use /multi-review instead',
           executionTimeMs: Date.now() - startTime,
         };
       }
@@ -172,7 +172,7 @@ export class GeminiAdapter implements ReviewerAdapter {
     }
     if (err.message === 'TIMEOUT') {
       return { success: false, error: { type: 'timeout', message: 'Gemini timed out — no events received' },
-        suggestion: 'Try a smaller scope or use /codex-review', executionTimeMs: Date.now() - startTime };
+        suggestion: 'Try a smaller scope or use /multi-review', executionTimeMs: Date.now() - startTime };
     }
     if (err.message === 'MAX_TIMEOUT') {
       return { success: false, error: { type: 'timeout', message: 'Task exceeded 60 minute maximum' },
@@ -194,7 +194,7 @@ export class GeminiAdapter implements ReviewerAdapter {
 
   private getSuggestion(error: ReviewError): string {
     switch (error.type) {
-      case 'rate_limit': return 'Wait and retry, or use /codex-review instead';
+      case 'rate_limit': return 'Wait and retry, or use /multi-review instead';
       case 'auth_error': return 'Run `gemini` and follow auth prompts, or set GEMINI_API_KEY';
       case 'cli_not_found': return 'Install with: npm install -g @google/gemini-cli';
       default: return 'Check the error message and try again';
@@ -226,7 +226,7 @@ export class GeminiAdapter implements ReviewerAdapter {
         return {
           success: false,
           error: { type: 'cli_error', message: 'Gemini returned empty response' },
-          suggestion: 'Try again or use /codex-review instead',
+          suggestion: 'Try again or use /multi-review instead',
           executionTimeMs: Date.now() - startTime,
         };
       }

@@ -425,12 +425,12 @@ export declare const CCAnalysisSchema: z.ZodObject<{
         question: z.ZodString;
         ccBestGuess: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
-        topic: string;
         question: string;
+        topic: string;
         ccBestGuess?: string | undefined;
     }, {
-        topic: string;
         question: string;
+        topic: string;
         ccBestGuess?: string | undefined;
     }>, "many">>;
     assumptions: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
@@ -451,8 +451,6 @@ export declare const CCAnalysisSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     originalRequest: string;
     summary: string;
-    taskType?: "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "performance" | "review" | undefined;
-    confidence?: number | undefined;
     findings?: {
         description: string;
         category: string;
@@ -460,9 +458,11 @@ export declare const CCAnalysisSchema: z.ZodObject<{
         confidence?: number | undefined;
         addressed?: boolean | undefined;
     }[] | undefined;
+    taskType?: "performance" | "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "review" | undefined;
+    confidence?: number | undefined;
     uncertainties?: {
-        topic: string;
         question: string;
+        topic: string;
         ccBestGuess?: string | undefined;
     }[] | undefined;
     assumptions?: string[] | undefined;
@@ -474,8 +474,6 @@ export declare const CCAnalysisSchema: z.ZodObject<{
 }, {
     originalRequest: string;
     summary: string;
-    taskType?: "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "performance" | "review" | undefined;
-    confidence?: number | undefined;
     findings?: {
         description: string;
         category: string;
@@ -483,9 +481,11 @@ export declare const CCAnalysisSchema: z.ZodObject<{
         confidence?: number | undefined;
         addressed?: boolean | undefined;
     }[] | undefined;
+    taskType?: "performance" | "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "review" | undefined;
+    confidence?: number | undefined;
     uncertainties?: {
-        topic: string;
         question: string;
+        topic: string;
         ccBestGuess?: string | undefined;
     }[] | undefined;
     assumptions?: string[] | undefined;
@@ -538,13 +538,13 @@ export declare const ReviewScopeSchema: z.ZodObject<{
         ccAnswer: z.ZodOptional<z.ZodString>;
     }, "strip", z.ZodTypeAny, {
         question: string;
-        context?: string | undefined;
         relevantFiles?: string[] | undefined;
+        context?: string | undefined;
         ccAnswer?: string | undefined;
     }, {
         question: string;
-        context?: string | undefined;
         relevantFiles?: string[] | undefined;
+        context?: string | undefined;
         ccAnswer?: string | undefined;
     }>, "many">>;
 }, "strip", z.ZodTypeAny, {
@@ -564,8 +564,8 @@ export declare const ReviewScopeSchema: z.ZodObject<{
     }[] | undefined;
     questions?: {
         question: string;
-        context?: string | undefined;
         relevantFiles?: string[] | undefined;
+        context?: string | undefined;
         ccAnswer?: string | undefined;
     }[] | undefined;
 }, {
@@ -585,8 +585,8 @@ export declare const ReviewScopeSchema: z.ZodObject<{
     }[] | undefined;
     questions?: {
         question: string;
-        context?: string | undefined;
         relevantFiles?: string[] | undefined;
+        context?: string | undefined;
         ccAnswer?: string | undefined;
     }[] | undefined;
 }>;
@@ -737,12 +737,12 @@ export declare const ReviewContextSchema: z.ZodObject<{
             question: z.ZodString;
             ccBestGuess: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
-            topic: string;
             question: string;
+            topic: string;
             ccBestGuess?: string | undefined;
         }, {
-            topic: string;
             question: string;
+            topic: string;
             ccBestGuess?: string | undefined;
         }>, "many">>;
         assumptions: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
@@ -763,8 +763,6 @@ export declare const ReviewContextSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         originalRequest: string;
         summary: string;
-        taskType?: "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "performance" | "review" | undefined;
-        confidence?: number | undefined;
         findings?: {
             description: string;
             category: string;
@@ -772,9 +770,11 @@ export declare const ReviewContextSchema: z.ZodObject<{
             confidence?: number | undefined;
             addressed?: boolean | undefined;
         }[] | undefined;
+        taskType?: "performance" | "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "review" | undefined;
+        confidence?: number | undefined;
         uncertainties?: {
-            topic: string;
             question: string;
+            topic: string;
             ccBestGuess?: string | undefined;
         }[] | undefined;
         assumptions?: string[] | undefined;
@@ -786,8 +786,6 @@ export declare const ReviewContextSchema: z.ZodObject<{
     }, {
         originalRequest: string;
         summary: string;
-        taskType?: "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "performance" | "review" | undefined;
-        confidence?: number | undefined;
         findings?: {
             description: string;
             category: string;
@@ -795,9 +793,11 @@ export declare const ReviewContextSchema: z.ZodObject<{
             confidence?: number | undefined;
             addressed?: boolean | undefined;
         }[] | undefined;
+        taskType?: "performance" | "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "review" | undefined;
+        confidence?: number | undefined;
         uncertainties?: {
-            topic: string;
             question: string;
+            topic: string;
             ccBestGuess?: string | undefined;
         }[] | undefined;
         assumptions?: string[] | undefined;
@@ -1170,13 +1170,13 @@ export declare const ReviewContextSchema: z.ZodObject<{
             ccAnswer: z.ZodOptional<z.ZodString>;
         }, "strip", z.ZodTypeAny, {
             question: string;
-            context?: string | undefined;
             relevantFiles?: string[] | undefined;
+            context?: string | undefined;
             ccAnswer?: string | undefined;
         }, {
             question: string;
-            context?: string | undefined;
             relevantFiles?: string[] | undefined;
+            context?: string | undefined;
             ccAnswer?: string | undefined;
         }>, "many">>;
     }, "strip", z.ZodTypeAny, {
@@ -1196,8 +1196,8 @@ export declare const ReviewContextSchema: z.ZodObject<{
         }[] | undefined;
         questions?: {
             question: string;
-            context?: string | undefined;
             relevantFiles?: string[] | undefined;
+            context?: string | undefined;
             ccAnswer?: string | undefined;
         }[] | undefined;
     }, {
@@ -1217,14 +1217,38 @@ export declare const ReviewContextSchema: z.ZodObject<{
         }[] | undefined;
         questions?: {
             question: string;
-            context?: string | undefined;
             relevantFiles?: string[] | undefined;
+            context?: string | undefined;
             ccAnswer?: string | undefined;
         }[] | undefined;
     }>>;
     focusAreas: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
     customInstructions: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
+    analysis: {
+        originalRequest: string;
+        summary: string;
+        findings?: {
+            description: string;
+            category: string;
+            location?: string | undefined;
+            confidence?: number | undefined;
+            addressed?: boolean | undefined;
+        }[] | undefined;
+        taskType?: "performance" | "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "review" | undefined;
+        confidence?: number | undefined;
+        uncertainties?: {
+            question: string;
+            topic: string;
+            ccBestGuess?: string | undefined;
+        }[] | undefined;
+        assumptions?: string[] | undefined;
+        decisions?: {
+            decision: string;
+            rationale: string;
+            alternatives?: string[] | undefined;
+        }[] | undefined;
+    };
     workingDir: string;
     changes: {
         files: {
@@ -1248,30 +1272,6 @@ export declare const ReviewContextSchema: z.ZodObject<{
         totalLinesAdded?: number | undefined;
         totalLinesRemoved?: number | undefined;
         impactedModules?: string[] | undefined;
-    };
-    analysis: {
-        originalRequest: string;
-        summary: string;
-        taskType?: "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "performance" | "review" | undefined;
-        confidence?: number | undefined;
-        findings?: {
-            description: string;
-            category: string;
-            location?: string | undefined;
-            confidence?: number | undefined;
-            addressed?: boolean | undefined;
-        }[] | undefined;
-        uncertainties?: {
-            topic: string;
-            question: string;
-            ccBestGuess?: string | undefined;
-        }[] | undefined;
-        assumptions?: string[] | undefined;
-        decisions?: {
-            decision: string;
-            rationale: string;
-            alternatives?: string[] | undefined;
-        }[] | undefined;
     };
     timestamp?: string | undefined;
     execution?: {
@@ -1352,14 +1352,38 @@ export declare const ReviewContextSchema: z.ZodObject<{
         }[] | undefined;
         questions?: {
             question: string;
-            context?: string | undefined;
             relevantFiles?: string[] | undefined;
+            context?: string | undefined;
             ccAnswer?: string | undefined;
         }[] | undefined;
     } | undefined;
     focusAreas?: string[] | undefined;
     customInstructions?: string | undefined;
 }, {
+    analysis: {
+        originalRequest: string;
+        summary: string;
+        findings?: {
+            description: string;
+            category: string;
+            location?: string | undefined;
+            confidence?: number | undefined;
+            addressed?: boolean | undefined;
+        }[] | undefined;
+        taskType?: "performance" | "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "review" | undefined;
+        confidence?: number | undefined;
+        uncertainties?: {
+            question: string;
+            topic: string;
+            ccBestGuess?: string | undefined;
+        }[] | undefined;
+        assumptions?: string[] | undefined;
+        decisions?: {
+            decision: string;
+            rationale: string;
+            alternatives?: string[] | undefined;
+        }[] | undefined;
+    };
     workingDir: string;
     changes: {
         files: {
@@ -1383,30 +1407,6 @@ export declare const ReviewContextSchema: z.ZodObject<{
         totalLinesAdded?: number | undefined;
         totalLinesRemoved?: number | undefined;
         impactedModules?: string[] | undefined;
-    };
-    analysis: {
-        originalRequest: string;
-        summary: string;
-        taskType?: "other" | "feature" | "bugfix" | "refactor" | "security-fix" | "performance" | "review" | undefined;
-        confidence?: number | undefined;
-        findings?: {
-            description: string;
-            category: string;
-            location?: string | undefined;
-            confidence?: number | undefined;
-            addressed?: boolean | undefined;
-        }[] | undefined;
-        uncertainties?: {
-            topic: string;
-            question: string;
-            ccBestGuess?: string | undefined;
-        }[] | undefined;
-        assumptions?: string[] | undefined;
-        decisions?: {
-            decision: string;
-            rationale: string;
-            alternatives?: string[] | undefined;
-        }[] | undefined;
     };
     timestamp?: string | undefined;
     execution?: {
@@ -1487,8 +1487,8 @@ export declare const ReviewContextSchema: z.ZodObject<{
         }[] | undefined;
         questions?: {
             question: string;
-            context?: string | undefined;
             relevantFiles?: string[] | undefined;
+            context?: string | undefined;
             ccAnswer?: string | undefined;
         }[] | undefined;
     } | undefined;

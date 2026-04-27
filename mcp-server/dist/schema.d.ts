@@ -66,7 +66,7 @@ export declare const ReviewFinding: z.ZodObject<{
     severity: "high" | "info" | "critical" | "medium" | "low";
     title: string;
     description: string;
-    category: "other" | "performance" | "security" | "testing" | "architecture" | "correctness" | "maintainability" | "scalability" | "documentation" | "best-practice";
+    category: "security" | "performance" | "architecture" | "correctness" | "maintainability" | "scalability" | "testing" | "documentation" | "other" | "best-practice";
     confidence: number;
     id: string;
     location?: {
@@ -85,7 +85,7 @@ export declare const ReviewFinding: z.ZodObject<{
     severity: "high" | "info" | "critical" | "medium" | "low";
     title: string;
     description: string;
-    category: "other" | "performance" | "security" | "testing" | "architecture" | "correctness" | "maintainability" | "scalability" | "documentation" | "best-practice";
+    category: "security" | "performance" | "architecture" | "correctness" | "maintainability" | "scalability" | "testing" | "documentation" | "other" | "best-practice";
     confidence: number;
     id: string;
     location?: {
@@ -269,7 +269,7 @@ export declare const ReviewOutput: z.ZodObject<{
         severity: "high" | "info" | "critical" | "medium" | "low";
         title: string;
         description: string;
-        category: "other" | "performance" | "security" | "testing" | "architecture" | "correctness" | "maintainability" | "scalability" | "documentation" | "best-practice";
+        category: "security" | "performance" | "architecture" | "correctness" | "maintainability" | "scalability" | "testing" | "documentation" | "other" | "best-practice";
         confidence: number;
         id: string;
         location?: {
@@ -288,7 +288,7 @@ export declare const ReviewOutput: z.ZodObject<{
         severity: "high" | "info" | "critical" | "medium" | "low";
         title: string;
         description: string;
-        category: "other" | "performance" | "security" | "testing" | "architecture" | "correctness" | "maintainability" | "scalability" | "documentation" | "best-practice";
+        category: "security" | "performance" | "architecture" | "correctness" | "maintainability" | "scalability" | "testing" | "documentation" | "other" | "best-practice";
         confidence: number;
         id: string;
         location?: {
@@ -434,7 +434,7 @@ export declare const ReviewOutput: z.ZodObject<{
         severity: "high" | "info" | "critical" | "medium" | "low";
         title: string;
         description: string;
-        category: "other" | "performance" | "security" | "testing" | "architecture" | "correctness" | "maintainability" | "scalability" | "documentation" | "best-practice";
+        category: "security" | "performance" | "architecture" | "correctness" | "maintainability" | "scalability" | "testing" | "documentation" | "other" | "best-practice";
         confidence: number;
         id: string;
         location?: {
@@ -502,7 +502,7 @@ export declare const ReviewOutput: z.ZodObject<{
         severity: "high" | "info" | "critical" | "medium" | "low";
         title: string;
         description: string;
-        category: "other" | "performance" | "security" | "testing" | "architecture" | "correctness" | "maintainability" | "scalability" | "documentation" | "best-practice";
+        category: "security" | "performance" | "architecture" | "correctness" | "maintainability" | "scalability" | "testing" | "documentation" | "other" | "best-practice";
         confidence: number;
         id: string;
         location?: {

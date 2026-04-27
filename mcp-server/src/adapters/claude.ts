@@ -103,7 +103,7 @@ export class ClaudeAdapter implements ReviewerAdapter {
         return {
           success: false,
           error: { type: 'cli_error', message: 'Claude returned empty response' },
-          suggestion: 'Try again or use /codex-review instead',
+          suggestion: 'Try again or use /multi-review instead',
           executionTimeMs: Date.now() - startTime,
         };
       }
@@ -194,7 +194,7 @@ export class ClaudeAdapter implements ReviewerAdapter {
     }
     if (err.message === 'TIMEOUT') {
       return { success: false, error: { type: 'timeout', message: 'Claude timed out — no events received' },
-        suggestion: 'Try a smaller scope or use /codex-review', executionTimeMs: Date.now() - startTime };
+        suggestion: 'Try a smaller scope or use /multi-review', executionTimeMs: Date.now() - startTime };
     }
     if (err.message === 'MAX_TIMEOUT') {
       return { success: false, error: { type: 'timeout', message: 'Task exceeded 60 minute maximum' },
@@ -216,7 +216,7 @@ export class ClaudeAdapter implements ReviewerAdapter {
 
   private getSuggestion(error: ReviewError): string {
     switch (error.type) {
-      case 'rate_limit': return 'Wait and retry, or use /codex-review or /gemini-review instead';
+      case 'rate_limit': return 'Wait and retry, or use /multi-review instead';
       case 'auth_error': return 'Run `claude auth` to authenticate';
       case 'cli_not_found': return 'Install Claude Code: https://docs.anthropic.com/en/docs/claude-code';
       default: return 'Check the error message and try again';
@@ -248,7 +248,7 @@ export class ClaudeAdapter implements ReviewerAdapter {
         return {
           success: false,
           error: { type: 'cli_error', message: 'Claude returned empty response' },
-          suggestion: 'Try again or use /codex-review instead',
+          suggestion: 'Try again or use /multi-review instead',
           executionTimeMs: Date.now() - startTime,
         };
       }

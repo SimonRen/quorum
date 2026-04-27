@@ -17,21 +17,21 @@ export declare const ReviewInputSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     workingDir: string;
     ccOutput: string;
-    outputType: "findings" | "analysis" | "plan" | "proposal";
+    outputType: "plan" | "findings" | "analysis" | "proposal";
     reasoningEffort?: "high" | "xhigh" | undefined;
     serviceTier?: "default" | "fast" | "flex" | undefined;
-    focusAreas?: ("performance" | "security" | "testing" | "architecture" | "correctness" | "maintainability" | "scalability" | "documentation")[] | undefined;
-    analyzedFiles?: string[] | undefined;
     customPrompt?: string | undefined;
+    focusAreas?: ("security" | "performance" | "architecture" | "correctness" | "maintainability" | "scalability" | "testing" | "documentation")[] | undefined;
+    analyzedFiles?: string[] | undefined;
 }, {
     workingDir: string;
     ccOutput: string;
-    outputType: "findings" | "analysis" | "plan" | "proposal";
+    outputType: "plan" | "findings" | "analysis" | "proposal";
     reasoningEffort?: "high" | "xhigh" | undefined;
     serviceTier?: "default" | "fast" | "flex" | undefined;
-    focusAreas?: ("performance" | "security" | "testing" | "architecture" | "correctness" | "maintainability" | "scalability" | "documentation")[] | undefined;
-    analyzedFiles?: string[] | undefined;
     customPrompt?: string | undefined;
+    focusAreas?: ("security" | "performance" | "architecture" | "correctness" | "maintainability" | "scalability" | "testing" | "documentation")[] | undefined;
+    analyzedFiles?: string[] | undefined;
 }>;
 export type ReviewInput = z.infer<typeof ReviewInputSchema>;
 export declare function handleCodexReview(input: ReviewInput): Promise<{

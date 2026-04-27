@@ -182,7 +182,7 @@ export const TOOL_DEFINITIONS = {
     },
     multi_review: {
         name: 'multi_review',
-        description: "ONLY use when user explicitly requests '/multi-review' or 'review with all models'. Runs parallel standard AND adversarial reviews from all available models. Each model reviews twice: standard (bugs/issues) + adversarial (challenge assumptions/design decisions). Use customPrompt to steer the adversarial focus. DO NOT use for general 'review' requests.",
+        description: "Use when reviewing existing CC-produced work (plan, findings, code). Requires 'ccOutput' — CC's prior output to evaluate. Runs parallel standard AND adversarial reviews from all available models. For asking the panel an open question with no prior CC-produced work to review, use 'multi_consult' instead. The discriminator is the shape of the input, not the user's phrasing.",
         inputSchema: {
             type: 'object',
             properties: {

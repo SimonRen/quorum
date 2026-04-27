@@ -10,7 +10,7 @@
  *   2. --disallowed-tools         (write tools explicitly blocked)
  *   3. Handoff prompt             (explicit READ-ONLY instruction)
  */
-import { ReviewerAdapter, ReviewerCapabilities, ReviewRequest, ReviewResult } from './base.js';
+import { ReviewerAdapter, ReviewerCapabilities, ReviewRequest, ReviewResult, ConsultRequest, ConsultResult } from './base.js';
 export declare class ClaudeAdapter implements ReviewerAdapter {
     readonly id = "claude";
     getCapabilities(): ReviewerCapabilities;
@@ -20,5 +20,6 @@ export declare class ClaudeAdapter implements ReviewerAdapter {
     private handleException;
     private categorizeError;
     private getSuggestion;
+    runConsult(request: ConsultRequest): Promise<ConsultResult>;
 }
 export declare const claudeAdapter: ClaudeAdapter;

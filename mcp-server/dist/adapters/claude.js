@@ -16,6 +16,7 @@ import { registerAdapter, } from './base.js';
 import { CliExecutor } from '../executor.js';
 import { ClaudeEventDecoder } from '../decoders/index.js';
 import { buildSimpleHandoff, buildHandoffPrompt, buildAdversarialHandoffPrompt, selectRole, } from '../handoff.js';
+import { buildConsultPrompt } from '../consult-prompt.js';
 import { getConfig } from '../config.js';
 // Write tools explicitly blocked as defense-in-depth
 const DISALLOWED_TOOLS = 'Edit Write NotebookEdit';
@@ -76,7 +77,7 @@ export class ClaudeAdapter {
                 return {
                     success: false,
                     error: { type: 'cli_error', message: 'Claude returned empty response' },
-                    suggestion: 'Try again or use /codex-review instead',
+                    suggestion: 'Try again or use /multi-review instead',
                     executionTimeMs: Date.now() - startTime,
                 };
             }
@@ -153,7 +154,7 @@ export class ClaudeAdapter {
         }
         if (err.message === 'TIMEOUT') {
             return { success: false, error: { type: 'timeout', message: 'Claude timed out — no events received' },
-                suggestion: 'Try a smaller scope or use /codex-review', executionTimeMs: Date.now() - startTime };
+                suggestion: 'Try a smaller scope or use /multi-review', executionTimeMs: Date.now() - startTime };
         }
         if (err.message === 'MAX_TIMEOUT') {
             return { success: false, error: { type: 'timeout', message: 'Task exceeded 60 minute maximum' },
@@ -173,10 +174,41 @@ export class ClaudeAdapter {
     }
     getSuggestion(error) {
         switch (error.type) {
-            case 'rate_limit': return 'Wait and retry, or use /codex-review or /gemini-review instead';
+            case 'rate_limit': return 'Wait and retry, or use /multi-review instead';
             case 'auth_error': return 'Run `claude auth` to authenticate';
             case 'cli_not_found': return 'Install Claude Code: https://docs.anthropic.com/en/docs/claude-code';
             default: return 'Check the error message and try again';
+        }
+    }
+    async runConsult(request) {
+        const startTime = Date.now();
+        if (!existsSync(request.workingDir)) {
+            return {
+                success: false,
+                error: { type: 'cli_error', message: `Working directory does not exist: ${request.workingDir}` },
+                suggestion: 'Check that the working directory path is correct',
+                executionTimeMs: Date.now() - startTime,
+            };
+        }
+        try {
+            const prompt = buildConsultPrompt(request);
+            const result = await this.runCli(prompt, request.workingDir);
+            if (result.exitCode !== 0) {
+                const error = this.categorizeError(result.stderr);
+                return { success: false, error, suggestion: this.getSuggestion(error), executionTimeMs: Date.now() - startTime };
+            }
+            if (!result.stdout.trim()) {
+                return {
+                    success: false,
+                    error: { type: 'cli_error', message: 'Claude returned empty response' },
+                    suggestion: 'Try again or use /multi-review instead',
+                    executionTimeMs: Date.now() - startTime,
+                };
+            }
+            return { success: true, output: result.stdout, executionTimeMs: Date.now() - startTime };
+        }
+        catch (error) {
+            return this.handleException(error, startTime);
         }
     }
 }
