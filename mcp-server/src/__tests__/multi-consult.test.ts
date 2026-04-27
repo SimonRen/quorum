@@ -175,6 +175,49 @@ describe('handleMultiConsult', () => {
   });
 });
 
+describe('handleMultiConsult — workingDir denylist', () => {
+  beforeEach(() => {
+    mocks.getAvailableAdapters.mockReset();
+  });
+
+  it('rejects /etc as workingDir before dispatching adapters', async () => {
+    mocks.getAvailableAdapters.mockResolvedValue([makeAdapter('codex', 'success', goodOutput)]);
+
+    const result = await handleMultiConsult({
+      workingDir: '/etc',
+      question: 'q',
+    });
+
+    expect(result.content[0].text).toMatch(/sensitive/i);
+    expect(mocks.getAvailableAdapters).not.toHaveBeenCalled();
+  });
+
+  it('rejects ~/.ssh (resolved) as workingDir', async () => {
+    const home = process.env.HOME ?? process.env.USERPROFILE ?? '';
+    if (!home) return; // skip if HOME isn't set in this env
+    mocks.getAvailableAdapters.mockResolvedValue([makeAdapter('codex', 'success', goodOutput)]);
+
+    const result = await handleMultiConsult({
+      workingDir: `${home}/.ssh`,
+      question: 'q',
+    });
+
+    expect(result.content[0].text).toMatch(/sensitive/i);
+  });
+
+  it('accepts an ordinary project path', async () => {
+    mocks.getAvailableAdapters.mockResolvedValue([makeAdapter('codex', 'success', goodOutput)]);
+
+    const result = await handleMultiConsult({
+      workingDir: process.cwd(),
+      question: 'q',
+    });
+
+    expect(result.content[0].text).not.toMatch(/sensitive/i);
+    expect(result.content[0].text).toContain('Multi-Consult');
+  });
+});
+
 describe('ConsultInputSchema', () => {
   it('rejects missing workingDir', () => {
     const result = ConsultInputSchema.safeParse({ question: 'q' });

@@ -6,8 +6,63 @@
  */
 
 import { z } from 'zod';
+import { realpathSync } from 'fs';
+import { resolve, sep } from 'path';
+import { homedir } from 'os';
 import { ConsultRequest, ConsultResult, ReviewerAdapter } from '../adapters/base.js';
 import { getAvailableAdapters } from '../adapters/index.js';
+
+// =============================================================================
+// SENSITIVE PATH GUARD
+// =============================================================================
+
+/**
+ * Returns the directory's *canonical* absolute path if it's safe to use as a
+ * workingDir, or null if it resolves to a sensitive system location. We deny
+ * roots like `/`, `/etc`, `~`, `~/.ssh`, etc. — paths *inside* a project root
+ * are fine. The check resolves symlinks via realpath so a symlinked alias of
+ * a sensitive directory is also caught.
+ */
+export function checkSensitiveWorkingDir(input: string): { ok: true; resolved: string } | { ok: false; reason: string } {
+  let resolved: string;
+  try {
+    // realpath if it exists; otherwise fall back to resolve() so the standard
+    // adapter cwd-existence check produces the user-visible error.
+    resolved = realpathSync(input);
+  } catch {
+    resolved = resolve(input);
+  }
+
+  const home = homedir();
+  const rawDenylist = [
+    '/',
+    '/etc',
+    '/var',
+    '/usr',
+    '/bin',
+    '/sbin',
+    '/boot',
+    '/root',
+    home,
+    `${home}${sep}.ssh`,
+    `${home}${sep}.aws`,
+    `${home}${sep}.config`,
+    `${home}${sep}.gnupg`,
+  ];
+
+  // Resolve denylist symlinks too (e.g. macOS /etc -> /private/etc) so the
+  // resolved-path comparison hits regardless of symlink direction.
+  const denylist = new Set<string>();
+  for (const path of rawDenylist) {
+    denylist.add(path);
+    try { denylist.add(realpathSync(path)); } catch { /* ignore — path doesn't exist */ }
+  }
+
+  if (denylist.has(resolved)) {
+    return { ok: false, reason: `workingDir resolves to a sensitive path: ${resolved}` };
+  }
+  return { ok: true, resolved };
+}
 
 // =============================================================================
 // SECTION VALIDATION
@@ -114,6 +169,18 @@ function formatOutcome(outcome: PerAdapterOutcome): string {
 export async function handleMultiConsult(
   input: ConsultInput,
 ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
+  // Sensitive-cwd guard runs before any adapter dispatch — direct MCP callers
+  // can't bypass the slash-command body's refusal by skipping CC.
+  const guard = checkSensitiveWorkingDir(input.workingDir);
+  if (!guard.ok) {
+    return {
+      content: [{
+        type: 'text',
+        text: `❌ Refused: ${guard.reason}\n\nInvoke /multi-consult from a project root, not a sensitive system path.`,
+      }],
+    };
+  }
+
   const request = toConsultRequest(input);
   const adapters = await getAvailableAdapters();
 
