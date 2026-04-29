@@ -34,6 +34,35 @@ If the question references the codebase, populate `relevantFiles` with the minim
 
 If the current working directory is `/etc`, `~`, `~/.ssh`, or any other clearly sensitive system path, **refuse**. Tell the user: "Please invoke `/multi-consult` from a project root — `<cwd>` looks sensitive." Do not call the tool.
 
+### 4. Extract criteria; clarify load-bearing assumptions BEFORE calling
+
+Pin what the question is being judged against. Once criteria are explicit, the panel's recommendation is anchored to them instead of floating — this is the fix for "ask twice, get a different answer." Stochastic re-runs converge much better against fixed criteria than against an under-specified question.
+
+**4a. Append a CRITERIA block to the end of `question`**, priority-ordered, each tagged `[stated]` or `[assumed]`:
+
+```
+CRITERIA (priority order):
+1. [stated] cost-per-request under $X / 1M ops
+2. [stated] team writes Go; minimize ops complexity
+3. [assumed] sustained ~10k QPS write rate
+4. [assumed] eventual consistency acceptable for analytics
+```
+
+- `[stated]` = explicit in the user's message or earlier conversation.
+- `[assumed]` = you needed to fix it to recommend; the user did NOT say.
+- Cap `[assumed]` at 3. If the top 3 don't fit, the question is too vague — bounce back to the user before calling.
+
+**4b. Pre-call clarification gate.** Scan your `[assumed]` criteria. If any is **load-bearing** (the recommendation would flip if the assumption is wrong), STOP and ask the user before invoking the tool:
+
+> "Before I consult the panel, I need to confirm: <restate assumption>. Is that right, or should I adjust to <plausible alternative>?"
+
+A burned panel call on a wrong assumed criterion costs more than the round-trip.
+
+**Skip the gate when:**
+- `[stated]` criteria fully pin the answer space (no assumptions needed).
+- The user told you to proceed without clarification.
+- Remaining assumptions are clearly incidental (would not flip the rec).
+
 ## Tool Invocation
 
 Call `multi_consult` with:

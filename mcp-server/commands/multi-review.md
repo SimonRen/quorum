@@ -23,17 +23,27 @@ Use `/multi-review` when you want thorough parallel reviews from all available m
 
 ## Before Calling - PREPARE THE HANDOFF
 
-### 1. Summarize What You Did (Brief!)
+### 1. Summarize What You Did + State the Acceptance Bar
+
+Don't just say what you did — also state the bar the work needs to clear. The bar is what lets reviewers calibrate "material" vs "nice to have." Without it, reviewers default to general code-quality vibes, which produces drift across runs.
+
 ```
-"Implemented caching layer for the product catalog API using Redis.
-Added cache invalidation on product updates."
+"Implemented caching layer for the product catalog API using Redis with cache invalidation on product updates.
+Bar: safe under concurrent updates (no stale reads on the next request) AND p95 read latency under 50ms."
 ```
 
-### 2. List Your Uncertainties
+### 2. List Your Uncertainties — Tag Load-Bearing vs Incidental
+
+Tag each uncertainty:
+- `[load-bearing]` = if your assumption here is wrong, the work is NOT shipping-ready
+- `[incidental]` = nice to verify but won't block ship
+
+Reviewers prioritize accordingly, and your synthesis can elevate `[load-bearing]` items above stylistic findings.
+
 ```
 UNCERTAINTIES:
-- "Is the cache TTL appropriate for this data?"
-- "Does the invalidation handle all update scenarios?"
+- [load-bearing] "Is the cache invalidation race-free under concurrent updates?"
+- [incidental] "Is the TTL value optimal — could it be 60s instead of 30s?"
 ```
 
 ### 3. Ask Specific Questions
@@ -41,6 +51,16 @@ UNCERTAINTIES:
 QUESTIONS:
 - "Should I use write-through or write-behind caching?"
 - "Is there a race condition in the invalidation logic?"
+```
+
+### 4. Identify Decisions You Made
+
+If you chose between alternatives — caching strategy, retry policy, error-handling shape, schema design, etc. — list them with rationale. The handoff schema's `decisions[]` field gives the adversarial reviewer a concrete hook to attack the design choice rather than just hunt for bugs. Skip if the change is a straightforward bug fix with no design choice involved.
+
+```
+DECISIONS:
+1. Chose write-through cache over write-behind. Rationale: stronger read-after-write consistency at the cost of slightly slower writes; we prioritize correctness for catalog data.
+2. Chose 30s TTL with explicit invalidation on update. Rationale: TTL bounds staleness if invalidation misses; explicit invalidation catches the common path immediately.
 ```
 
 ## Tool Invocation
@@ -67,13 +87,18 @@ Call `multi_review` with:
 ```
 SUMMARY:
 <what you did, 1-3 sentences>
+Bar: <what counts as shipping-ready — concrete acceptance criteria>
 
 UNCERTAINTIES (verify these):
-1. <uncertainty>
-2. <uncertainty>
+1. [load-bearing|incidental] <uncertainty>
+2. [load-bearing|incidental] <uncertainty>
 
 QUESTIONS:
 1. <question>
+
+DECISIONS:
+1. <choice>. Rationale: <why this over alternatives>
+2. <choice>. Rationale: <why this over alternatives>
 
 PRIORITY FILES:
 - <file>
