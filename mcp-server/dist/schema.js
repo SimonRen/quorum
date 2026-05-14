@@ -12,6 +12,15 @@ export const SeverityLevel = z.enum(['critical', 'high', 'medium', 'low', 'info'
 export const ConfidenceLevel = z.enum(['verified', 'high', 'medium', 'low', 'uncertain']);
 // Numeric confidence score (0-1)
 export const ConfidenceScore = z.number().min(0).max(1);
+/**
+ * Sentinel used when a reviewer omits `confidence` on a finding, agreement,
+ * or disagreement. Confidence is required by the Zod schema, but external
+ * CLIs occasionally drop the field — rather than reject the whole review,
+ * normalization fills it with this midpoint value. 0.5 reads as "the
+ * reviewer did not commit to a confidence" without skewing the result
+ * toward "confidently right" or "confidently wrong".
+ */
+export const DEFAULT_FINDING_CONFIDENCE = 0.5;
 // =============================================================================
 // CODE LOCATION
 // =============================================================================
@@ -40,7 +49,7 @@ export const ReviewFinding = z.object({
         'other'
     ]).describe('Primary category of the finding'),
     severity: SeverityLevel.describe('Impact severity level'),
-    confidence: ConfidenceScore.describe('Confidence in this finding (0-1)'),
+    confidence: ConfidenceScore.describe('Confidence in this finding (0-1). Required. If the reviewer omits this field, normalizeReviewOutput fills it with DEFAULT_FINDING_CONFIDENCE (0.5) so the whole review is not dropped.'),
     title: z.string().max(120).describe('Brief title summarizing the issue'),
     description: z.string().describe('Detailed explanation of the finding'),
     location: CodeLocation.optional().describe('Where in the code this applies'),
@@ -270,9 +279,27 @@ export function getReviewOutputJsonSchema() {
     };
 }
 /**
+ * Fill `confidence` with the sentinel when an object-shaped item omits it.
+ * Leaves non-object items alone so downstream Zod validation still surfaces
+ * a useful error for genuinely malformed entries.
+ */
+function fillMissingConfidence(item) {
+    if (!item || typeof item !== 'object' || Array.isArray(item))
+        return item;
+    const obj = item;
+    if (typeof obj.confidence === 'number')
+        return obj;
+    return { ...obj, confidence: DEFAULT_FINDING_CONFIDENCE };
+}
+/**
  * Normalize reviewer output that deviates from the strict schema.
  * Handles common patterns from external CLIs (e.g. Gemini returning
  * agreements as strings instead of objects, missing required fields).
+ *
+ * Notably: `confidence` is required on findings/agreements/disagreements,
+ * but reviewers occasionally drop it. Rather than reject the whole review,
+ * we fill the missing field with DEFAULT_FINDING_CONFIDENCE so the rest of
+ * the review survives validation.
  */
 function normalizeReviewOutput(parsed) {
     const normalized = { ...parsed };
@@ -280,13 +307,13 @@ function normalizeReviewOutput(parsed) {
     if (!normalized.reviewer) {
         normalized.reviewer = 'external';
     }
-    // Normalize agreements: string[] -> Agreement[]
+    // Normalize agreements: string[] -> Agreement[], then fill missing confidence
     if (Array.isArray(normalized.agreements)) {
         normalized.agreements = normalized.agreements.map((a) => {
             if (typeof a === 'string') {
-                return { original_claim: a, assessment: 'correct', confidence: 0.7 };
+                return { original_claim: a, assessment: 'correct', confidence: DEFAULT_FINDING_CONFIDENCE };
             }
-            return a;
+            return fillMissingConfidence(a);
         });
     }
     else {
@@ -296,6 +323,14 @@ function normalizeReviewOutput(parsed) {
     normalized.disagreements = normalized.disagreements ?? [];
     normalized.alternatives = normalized.alternatives ?? [];
     normalized.findings = normalized.findings ?? [];
+    // Fill missing confidence on findings and disagreements (Zod requires it;
+    // dropping the whole review for one missing scalar is worse than a sentinel)
+    if (Array.isArray(normalized.findings)) {
+        normalized.findings = normalized.findings.map(fillMissingConfidence);
+    }
+    if (Array.isArray(normalized.disagreements)) {
+        normalized.disagreements = normalized.disagreements.map(fillMissingConfidence);
+    }
     // Normalize optional response arrays — drop non-array values
     if (normalized.uncertainty_responses !== undefined && !Array.isArray(normalized.uncertainty_responses)) {
         delete normalized.uncertainty_responses;
@@ -435,7 +470,7 @@ export function parseLegacyMarkdownOutput(markdown, reviewer) {
                     output.agreements.push({
                         original_claim: content.split(':')[0] || content,
                         assessment: 'correct',
-                        confidence: 0.7,
+                        confidence: DEFAULT_FINDING_CONFIDENCE,
                     });
                 }
             }
@@ -450,7 +485,7 @@ export function parseLegacyMarkdownOutput(markdown, reviewer) {
                     output.disagreements.push({
                         original_claim: content.split(':')[0] || content,
                         issue: 'incorrect',
-                        confidence: 0.7,
+                        confidence: DEFAULT_FINDING_CONFIDENCE,
                         reason: content,
                     });
                 }
@@ -469,7 +504,7 @@ export function parseLegacyMarkdownOutput(markdown, reviewer) {
                         id: `legacy-${idx++}`,
                         category: 'other',
                         severity: 'medium',
-                        confidence: 0.6,
+                        confidence: DEFAULT_FINDING_CONFIDENCE,
                         title: content.slice(0, 100),
                         description: content,
                         location: locationMatch ? {

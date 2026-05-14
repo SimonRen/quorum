@@ -233,8 +233,13 @@ export const ADVERSARIAL_REVIEWER: ReviewerRole = {
 
 /**
  * Build an adversarial handoff prompt with challenge-mode stance sections.
- * Same structure as buildHandoffPrompt but adds adversarial XML sections
- * and uses the ADVERSARIAL_REVIEWER role.
+ *
+ * Block structure ported from openai/codex-plugin-cc's adversarial-review
+ * prompt: tagged XML blocks (operating_stance, attack_surface, review_method,
+ * finding_bar, calibration_rules, grounding_rules, final_check) so the prompt
+ * has stable internal structure the reviewer can lean on. CC's handoff
+ * sections (uncertainties / decisions / questions / focus / files / focus
+ * instructions) are layered on after as our differentiator.
  */
 export function buildAdversarialHandoffPrompt(options: PromptOptions): string {
   const { handoff } = options;
@@ -245,34 +250,36 @@ export function buildAdversarialHandoffPrompt(options: PromptOptions): string {
   // SECTION 1: ROLE
   sections.push(`# ROLE: ${role.name}\n\n${role.systemPrompt}`);
 
-  // SECTION 2: ADVERSARIAL STANCE
-  sections.push(`## ADVERSARIAL STANCE
-
-<operating_stance>
-Default to skepticism. Assume the change can fail in subtle, high-cost,
-or user-visible ways until the evidence says otherwise. Do not give credit
-for good intent, partial fixes, or likely follow-up work.
+  // SECTION 2: ADVERSARIAL STANCE — tagged blocks form the operating contract
+  sections.push(`<operating_stance>
+Default to skepticism.
+Assume the change can fail in subtle, high-cost, or user-visible ways until the evidence says otherwise.
+Do not give credit for good intent, partial fixes, or likely follow-up work.
+If something only works on the happy path, treat that as a real weakness.
 </operating_stance>
 
 <attack_surface>
-Prioritized failure categories:
-1. Auth/permissions bypass
-2. Data loss or corruption
-3. Rollback safety
-4. Race conditions / concurrency
-5. Empty-state / null / timeout handling
-6. Version skew / backwards compatibility
-7. Observability gaps (missing logs, metrics, alerts)
+Prioritize the kinds of failures that are expensive, dangerous, or hard to detect:
+- auth, permissions, tenant isolation, and trust boundaries
+- data loss, corruption, duplication, and irreversible state changes
+- rollback safety, retries, partial failure, and idempotency gaps
+- race conditions, ordering assumptions, stale state, and re-entrancy
+- empty-state, null, timeout, and degraded dependency behavior
+- version skew, schema drift, migration hazards, and compatibility regressions
+- observability gaps that would hide failure or make recovery harder
 </attack_surface>
 
 <review_method>
-Actively try to disprove the change. Look for violated invariants,
-missing guards, unhandled failure paths. If the user supplied a focus area,
-weight it heavily, but still report any other material issue you can defend.
+Actively try to disprove the change.
+Look for violated invariants, missing guards, unhandled failure paths, and assumptions that stop being true under stress.
+Trace how bad inputs, retries, concurrent actions, or partially completed operations move through the code.
+If the user supplied a focus area, weight it heavily, but still report any other material issue you can defend.
 </review_method>
 
 <finding_bar>
-Material findings only. Each must answer:
+Report only material findings.
+Do not include style feedback, naming feedback, low-value cleanup, or speculative concerns without evidence.
+Each finding must answer:
 1. What can go wrong?
 2. Why is this code path vulnerable?
 3. What is the likely impact?
@@ -280,15 +287,25 @@ Material findings only. Each must answer:
 </finding_bar>
 
 <calibration_rules>
-Prefer one strong finding over several weak ones. If you cannot defend
-a finding from the provided code, drop it.
+Prefer one strong finding over several weak ones.
+Do not dilute serious issues with filler.
+If the change looks safe, say so directly and return no findings.
 </calibration_rules>
 
 <grounding_rules>
-Be aggressive, but stay grounded. Every finding must be defensible from
-the repository context. No speculative findings. No "might be an issue"
-without concrete evidence from the code.
-</grounding_rules>`);
+Be aggressive, but stay grounded.
+Every finding must be defensible from the repository context or tool outputs.
+Do not invent files, lines, code paths, incidents, attack chains, or runtime behavior you cannot support.
+If a conclusion depends on an inference, state that explicitly in the finding body and keep the confidence honest.
+</grounding_rules>
+
+<final_check>
+Before finalizing, check that each finding is:
+- adversarial rather than stylistic
+- tied to a concrete code location
+- plausible under a real failure scenario
+- actionable for an engineer fixing the issue
+</final_check>`);
 
   // SECTION 3: TASK (same as standard)
   sections.push(`## YOUR TASK

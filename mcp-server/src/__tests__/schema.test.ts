@@ -10,6 +10,7 @@ import {
   ReviewOutput,
   UncertaintyResponse,
   QuestionAnswer,
+  DEFAULT_FINDING_CONFIDENCE,
   getReviewOutputJsonSchema,
   parseReviewOutput,
   isSubstantiveReview,
@@ -240,6 +241,80 @@ That's all.`;
     const result = parseReviewOutput(JSON.stringify(withBadField));
     expect(result).not.toBeNull();
     expect(result!.uncertainty_responses).toBeUndefined();
+  });
+
+  it('should fill missing finding confidence with the sentinel rather than dropping the review', () => {
+    const findingWithoutConfidence = {
+      ...validOutput,
+      findings: [
+        {
+          id: 'f1',
+          category: 'security',
+          severity: 'high',
+          title: 'SQL Injection',
+          description: 'User input is not sanitized',
+          // confidence intentionally omitted
+        },
+      ],
+    };
+    const result = parseReviewOutput(JSON.stringify(findingWithoutConfidence));
+    expect(result).not.toBeNull();
+    expect(result!.findings).toHaveLength(1);
+    expect(result!.findings[0].confidence).toBe(DEFAULT_FINDING_CONFIDENCE);
+  });
+
+  it('should fill missing disagreement confidence with the sentinel', () => {
+    const disagreementWithoutConfidence = {
+      ...validOutput,
+      disagreements: [
+        {
+          original_claim: 'CC said the cache is thread-safe',
+          issue: 'incorrect',
+          reason: 'Map is not concurrent',
+          // confidence intentionally omitted
+        },
+      ],
+    };
+    const result = parseReviewOutput(JSON.stringify(disagreementWithoutConfidence));
+    expect(result).not.toBeNull();
+    expect(result!.disagreements).toHaveLength(1);
+    expect(result!.disagreements[0].confidence).toBe(DEFAULT_FINDING_CONFIDENCE);
+  });
+
+  it('should fill missing agreement confidence on object-shaped agreements', () => {
+    const agreementWithoutConfidence = {
+      ...validOutput,
+      agreements: [
+        {
+          original_claim: 'CC said input validation is correct',
+          assessment: 'correct',
+          // confidence intentionally omitted
+        },
+      ],
+    };
+    const result = parseReviewOutput(JSON.stringify(agreementWithoutConfidence));
+    expect(result).not.toBeNull();
+    expect(result!.agreements).toHaveLength(1);
+    expect(result!.agreements[0].confidence).toBe(DEFAULT_FINDING_CONFIDENCE);
+  });
+
+  it('should preserve reviewer-provided confidence (no sentinel overwrite)', () => {
+    const findingWithExplicitConfidence = {
+      ...validOutput,
+      findings: [
+        {
+          id: 'f1',
+          category: 'security',
+          severity: 'high',
+          confidence: 0.95,
+          title: 'SQL Injection',
+          description: 'User input is not sanitized',
+        },
+      ],
+    };
+    const result = parseReviewOutput(JSON.stringify(findingWithExplicitConfidence));
+    expect(result).not.toBeNull();
+    expect(result!.findings[0].confidence).toBe(0.95);
   });
 });
 

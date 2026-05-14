@@ -11,6 +11,15 @@ export declare const ConfidenceLevel: z.ZodEnum<["verified", "high", "medium", "
 export type ConfidenceLevel = z.infer<typeof ConfidenceLevel>;
 export declare const ConfidenceScore: z.ZodNumber;
 export type ConfidenceScore = z.infer<typeof ConfidenceScore>;
+/**
+ * Sentinel used when a reviewer omits `confidence` on a finding, agreement,
+ * or disagreement. Confidence is required by the Zod schema, but external
+ * CLIs occasionally drop the field — rather than reject the whole review,
+ * normalization fills it with this midpoint value. 0.5 reads as "the
+ * reviewer did not commit to a confidence" without skewing the result
+ * toward "confidently right" or "confidently wrong".
+ */
+export declare const DEFAULT_FINDING_CONFIDENCE = 0.5;
 export declare const CodeLocation: z.ZodObject<{
     file: z.ZodString;
     line_start: z.ZodOptional<z.ZodNumber>;

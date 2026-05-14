@@ -218,8 +218,13 @@ export declare function selectRole(focusAreas?: FocusArea[]): ReviewerRole;
 export declare const ADVERSARIAL_REVIEWER: ReviewerRole;
 /**
  * Build an adversarial handoff prompt with challenge-mode stance sections.
- * Same structure as buildHandoffPrompt but adds adversarial XML sections
- * and uses the ADVERSARIAL_REVIEWER role.
+ *
+ * Block structure ported from openai/codex-plugin-cc's adversarial-review
+ * prompt: tagged XML blocks (operating_stance, attack_surface, review_method,
+ * finding_bar, calibration_rules, grounding_rules, final_check) so the prompt
+ * has stable internal structure the reviewer can lean on. CC's handoff
+ * sections (uncertainties / decisions / questions / focus / files / focus
+ * instructions) are layered on after as our differentiator.
  */
 export declare function buildAdversarialHandoffPrompt(options: PromptOptions): string;
 export interface PromptOptions {

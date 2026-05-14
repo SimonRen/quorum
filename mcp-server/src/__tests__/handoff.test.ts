@@ -87,6 +87,13 @@ describe('adversarial handoff prompt', () => {
     expect(prompt).toContain('</calibration_rules>');
     expect(prompt).toContain('<grounding_rules>');
     expect(prompt).toContain('</grounding_rules>');
+    expect(prompt).toContain('<final_check>');
+    expect(prompt).toContain('</final_check>');
+  });
+
+  it('should include the happy-path-is-a-weakness calibration line', () => {
+    const prompt = buildAdversarialHandoffPrompt({ handoff: mockHandoff });
+    expect(prompt).toContain('happy path');
   });
 
   it('should include standard handoff sections (task, uncertainties, files)', () => {
