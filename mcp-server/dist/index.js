@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * AI Reviewer MCP Server
+ * Quorum MCP Server
  *
  * Provides tools for getting second-opinion reviews from external AI CLIs
  * (Codex and Gemini) on Claude Code's work.
@@ -12,8 +12,8 @@
  * - Expert role specialization per focus area
  *
  * Usage:
- * - npx cc-reviewer          # Run MCP server (normal usage)
- * - npx cc-reviewer update   # Install/update slash commands
+ * - npx -y @simonren/quorum         # Run MCP server (normal usage)
+ * - npx -y @simonren/quorum update  # Install/update slash commands
  */
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -35,7 +35,7 @@ const subcommand = process.argv[2];
 if (subcommand === 'update' || subcommand === '--setup' || subcommand === '--commands') {
     const result = installCommands();
     if (result.success) {
-        console.log(`cc-reviewer v${VERSION}`);
+        console.log(`quorum v${VERSION}`);
         if (result.removed.length > 0) {
             console.log(`✓ Removed ${result.removed.length} deprecated commands: ${result.removed.map(c => `/${c}`).join(', ')}`);
         }
@@ -51,7 +51,7 @@ if (subcommand === 'update' || subcommand === '--setup' || subcommand === '--com
 import './adapters/index.js';
 // Create the MCP server
 const server = new Server({
-    name: 'ai-reviewer',
+    name: 'quorum',
     version: VERSION,
 }, {
     capabilities: {
@@ -103,30 +103,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 // Start the server
 async function main() {
-    // Initialize config (writes defaults to ~/.config/cc-reviewer/config.json on first run)
+    // Initialize config (writes defaults to ~/.config/quorum/config.json on first run)
     try {
         const cfg = initConfig();
         console.error(cfg.created
-            ? `[cc-reviewer] Initialized config at ${cfg.path}`
-            : `[cc-reviewer] Loaded config from ${cfg.path}`);
+            ? `[quorum] Initialized config at ${cfg.path}`
+            : `[quorum] Loaded config from ${cfg.path}`);
     }
     catch (error) {
         const msg = error instanceof Error ? error.message : String(error);
-        console.error(`[cc-reviewer] Warning: Could not initialize config: ${msg}`);
+        console.error(`[quorum] Warning: Could not initialize config: ${msg}`);
     }
     // Auto-install slash commands
     const result = installCommands();
     if (result.success) {
-        console.error(`[cc-reviewer] Installed ${result.installed.length} slash commands`);
+        console.error(`[quorum] Installed ${result.installed.length} slash commands`);
     }
     else {
-        console.error(`[cc-reviewer] Warning: Could not install commands: ${result.error}`);
+        console.error(`[quorum] Warning: Could not install commands: ${result.error}`);
     }
     // Log CLI availability status on startup
     await logCliStatus();
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('AI Reviewer MCP Server running on stdio');
+    console.error('Quorum MCP server running on stdio');
 }
 main().catch((error) => {
     console.error('Fatal error:', error);

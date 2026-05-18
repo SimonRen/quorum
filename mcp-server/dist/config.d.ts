@@ -1,7 +1,7 @@
 /**
- * Runtime configuration for cc-reviewer.
+ * Runtime configuration for quorum.
  *
- * Config file: ~/.config/cc-reviewer/config.json
+ * Config file: ~/.config/quorum/config.json
  *
  * Semantics:
  *   - Lazy, cached load. `getConfig()` returns the cached config or reads once.

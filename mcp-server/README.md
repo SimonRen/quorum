@@ -1,12 +1,12 @@
-# CC Reviewer - AI Code Review for Claude Code
+# Quorum - Multi-Model AI Review & Consultation for Claude Code
 
-Get second-opinion feedback from OpenAI Codex and Google Gemini CLIs on Claude Code's work, then synthesize and incorporate.
+Convene a quorum of AI models (OpenAI Codex, Google Gemini, Claude) to review Claude Code's work or answer questions — Claude Code synthesizes one verdict.
 
 ## Quick Install
 
 **Step 1: Add the MCP server**
 ```bash
-claude mcp add -s user cc-reviewer -- npx -y cc-reviewer
+claude mcp add -s user quorum -- npx -y @simonren/quorum
 ```
 
 **Step 2: Restart Claude Code**
@@ -15,22 +15,22 @@ The MCP tools and slash commands (`/multi-review`, `/multi-consult`) are automat
 
 **Manual command install** (if needed):
 ```bash
-npx cc-reviewer update
+npx -y @simonren/quorum update
 ```
 
 Verify with:
 ```bash
 claude mcp list
-# cc-reviewer: npx -y cc-reviewer - ✓ Connected
+# quorum: npx -y @simonren/quorum - ✓ Connected
 ```
 
 ### Alternative: Manual Install
 
 ```bash
-git clone https://github.com/SimonRen/cc-reviewer.git
-cd cc-reviewer/mcp-server
+git clone https://github.com/SimonRen/quorum.git
+cd quorum/mcp-server
 npm install && npm run build
-claude mcp add -s user cc-reviewer -- node /path/to/cc-reviewer/mcp-server/dist/index.js
+claude mcp add -s user quorum -- node /path/to/quorum/mcp-server/dist/index.js
 ```
 
 ## Prerequisites

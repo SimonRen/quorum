@@ -1,7 +1,7 @@
 /**
- * Runtime configuration for cc-reviewer.
+ * Runtime configuration for quorum.
  *
- * Config file: ~/.config/cc-reviewer/config.json
+ * Config file: ~/.config/quorum/config.json
  *
  * Semantics:
  *   - Lazy, cached load. `getConfig()` returns the cached config or reads once.
@@ -80,7 +80,7 @@ export const DEFAULT_CONFIG: Config = ConfigSchema.parse({});
 // STATE
 // =============================================================================
 
-const DEFAULT_CONFIG_PATH = join(homedir(), '.config', 'cc-reviewer', 'config.json');
+const DEFAULT_CONFIG_PATH = join(homedir(), '.config', 'quorum', 'config.json');
 
 let _configPath: string = DEFAULT_CONFIG_PATH;
 let _cached: Config | null = null;
@@ -163,12 +163,12 @@ function loadConfigFromDisk(path: string): Config {
   try {
     raw = JSON.parse(readFileSync(path, 'utf-8'));
     if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
-      console.error(`[cc-reviewer] Config at ${path} is not a JSON object — using defaults.`);
+      console.error(`[quorum] Config at ${path} is not a JSON object — using defaults.`);
       return DEFAULT_CONFIG;
     }
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    console.error(`[cc-reviewer] Invalid JSON in ${path} — using defaults. Error: ${msg}`);
+    console.error(`[quorum] Invalid JSON in ${path} — using defaults. Error: ${msg}`);
     return DEFAULT_CONFIG;
   }
 
@@ -185,7 +185,7 @@ function loadConfigFromDisk(path: string): Config {
       result[key] = schema.parse(section);
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
-      console.error(`[cc-reviewer] Invalid "${key}" config — using ${key} defaults. Error: ${msg}`);
+      console.error(`[quorum] Invalid "${key}" config — using ${key} defaults. Error: ${msg}`);
       result[key] = schema.parse(undefined);
     }
   }

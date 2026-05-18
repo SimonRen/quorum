@@ -28,7 +28,7 @@ let tempDir: string;
 let configPath: string;
 
 beforeEach(() => {
-  tempDir = join(tmpdir(), `cc-reviewer-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  tempDir = join(tmpdir(), `quorum-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   configPath = join(tempDir, 'config.json');
   setConfigPathForTesting(configPath);
 });

@@ -46,7 +46,7 @@ function findServiceTierArg(args: string[]): string | undefined {
 }
 
 // Isolate from the user's real config — use a non-existent path so defaults apply.
-setConfigPathForTesting('/tmp/__cc_reviewer_test_nonexistent/config.json');
+setConfigPathForTesting('/tmp/__quorum_test_nonexistent/config.json');
 afterAll(() => setConfigPathForTesting(null));
 
 describe('CodexAdapter — serviceTier defaulting', () => {

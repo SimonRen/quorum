@@ -1,11 +1,11 @@
 {
-  "name": "cc-reviewer",
-  "version": "6.2.0",
-  "description": "MCP server for Claude Code - Get second-opinion feedback from Codex/Gemini CLIs",
+  "name": "@simonren/quorum",
+  "version": "0.7.0",
+  "description": "MCP server for Claude Code — a quorum of AI models (Codex, Gemini, Claude) for adversarial review and consultation, synthesized by Claude Code",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "cc-reviewer": "dist/index.js"
+    "quorum": "dist/index.js"
   },
   "files": [
     "dist/**/*",
@@ -27,16 +27,21 @@
     "claude-code",
     "codex",
     "gemini",
+    "quorum",
     "ai-review",
+    "ai-consult",
     "code-review"
   ],
   "author": "SimonRen",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/SimonRen/cc-reviewer.git"
+    "url": "https://github.com/SimonRen/quorum.git"
   },
-  "homepage": "https://github.com/SimonRen/cc-reviewer#readme",
+  "homepage": "https://github.com/SimonRen/quorum#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.22.0"

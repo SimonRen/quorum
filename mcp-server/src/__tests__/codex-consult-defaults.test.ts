@@ -49,7 +49,7 @@ function findArg(args: string[], prefix: string): string | undefined {
   return args.find((a) => typeof a === 'string' && a.startsWith(prefix));
 }
 
-setConfigPathForTesting('/tmp/__cc_reviewer_test_nonexistent/config.json');
+setConfigPathForTesting('/tmp/__quorum_test_nonexistent/config.json');
 afterAll(() => setConfigPathForTesting(null));
 
 describe('CodexAdapter.runConsult — defaults', () => {
@@ -113,7 +113,7 @@ describe('CodexAdapter.runConsult — defaults', () => {
 });
 
 describe('CodexAdapter.runConsult — config respect', () => {
-  const fixtureDir = join(tmpdir(), `cc-reviewer-consult-config-${process.pid}`);
+  const fixtureDir = join(tmpdir(), `quorum-consult-config-${process.pid}`);
   const fixturePath = join(fixtureDir, 'config.json');
 
   beforeEach(() => {

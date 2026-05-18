@@ -12,7 +12,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { installCommands } from '../commands.js';
 
-const TMP_ROOT = join(tmpdir(), `cc-reviewer-commands-test-${process.pid}`);
+const TMP_ROOT = join(tmpdir(), `quorum-commands-test-${process.pid}`);
 
 function setup(): { source: string; target: string } {
   const source = join(TMP_ROOT, 'source');

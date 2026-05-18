@@ -60,7 +60,7 @@ This is an MCP (Model Context Protocol) server that provides AI review and consu
 - `schema.ts` - Zod schemas for review output
 - `handoff.ts` - Review handoff protocol: `buildHandoffPrompt()`, `buildAdversarialHandoffPrompt()`
 - `context.ts` - Review context with verification data
-- `config.ts` - Runtime config (`~/.config/cc-reviewer/config.json`). Includes consult-specific Codex knobs `consultReasoningEffort` (default `xhigh`) and `consultServiceTier` (default `fast`)
+- `config.ts` - Runtime config (`~/.config/quorum/config.json`). Includes consult-specific Codex knobs `consultReasoningEffort` (default `xhigh`) and `consultServiceTier` (default `fast`)
 
 **Design Principles:**
 - CC is primary - external models assist; CC always judges and synthesizes

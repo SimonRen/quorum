@@ -1,29 +1,19 @@
 {
-  "name": "cc-reviewer",
-  "version": "1.1.2",
-  "description": "Get second-opinion feedback from Codex/Gemini CLIs on Claude Code's work",
+  "name": "quorum",
+  "version": "0.7.0",
+  "description": "A quorum of AI models (Codex, Gemini, Claude) for adversarial review and consultation in Claude Code",
   "author": "SimonRen",
-  "homepage": "https://github.com/SimonRen/cc-reviewer",
+  "homepage": "https://github.com/SimonRen/quorum",
   "commands": [
     {
-      "name": "codex",
-      "description": "Get Codex feedback on CC's recent work",
-      "file": "commands/codex.md"
+      "name": "multi-review",
+      "description": "Parallel standard + adversarial reviews from all available models (Codex, Gemini, Claude) on CC-produced work",
+      "file": "mcp-server/commands/multi-review.md"
     },
     {
-      "name": "codex-xhigh",
-      "description": "Get Codex feedback with xhigh reasoning effort",
-      "file": "commands/codex-xhigh.md"
-    },
-    {
-      "name": "gemini",
-      "description": "Get Gemini feedback on CC's recent work",
-      "file": "commands/gemini.md"
-    },
-    {
-      "name": "multi",
-      "description": "Get parallel review from both Codex and Gemini",
-      "file": "commands/multi.md"
+      "name": "multi-consult",
+      "description": "Ask Codex, Gemini, and Claude the same question in parallel and synthesize a panel answer",
+      "file": "mcp-server/commands/multi-consult.md"
     }
   ]
 }

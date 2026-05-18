@@ -63,7 +63,7 @@ describe('GeminiAdapter — model flag with default config', () => {
   beforeEach(() => {
     capturedArgs.length = 0;
     // Point to non-existent path → defaults apply
-    tempDir = join(tmpdir(), `cc-reviewer-gemini-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tempDir = join(tmpdir(), `quorum-gemini-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     setConfigPathForTesting(join(tempDir, 'config.json'));
   });
 
@@ -114,7 +114,7 @@ describe('GeminiAdapter — model flag with configured model', () => {
 
   beforeEach(() => {
     capturedArgs.length = 0;
-    tempDir = join(tmpdir(), `cc-reviewer-gemini-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tempDir = join(tmpdir(), `quorum-gemini-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   });
 
   afterAll(() => {
@@ -177,7 +177,7 @@ describe('GeminiAdapter — CLI args structure', () => {
 
   beforeEach(() => {
     capturedArgs.length = 0;
-    tempDir = join(tmpdir(), `cc-reviewer-gemini-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    tempDir = join(tmpdir(), `quorum-gemini-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   });
 
   afterAll(() => setConfigPathForTesting(null));
