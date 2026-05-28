@@ -68,8 +68,8 @@ describe('DEFAULT_CONFIG', () => {
   });
 
   it('has expected gemini defaults', () => {
+    // agy (Antigravity CLI) has no --model flag; model selection lives in agy's settings.
     expect(DEFAULT_CONFIG.gemini).toEqual({
-      model: 'gemini-3.1-pro-preview',
       inactivityTimeoutMs: 300_000,
       maxTimeoutMs: 3_600_000,
       maxBufferSize: 1_048_576,
@@ -120,12 +120,13 @@ describe('getConfig — partial config deep-merge', () => {
     expect(cfg.codex.inactivityTimeoutMs.xhigh).toBe(300_000); // default
   });
 
-  it('allows setting gemini model to a string', () => {
+  it('allows overriding gemini timeout knobs', () => {
     mkdirSync(tempDir, { recursive: true });
-    writeFileSync(configPath, JSON.stringify({ gemini: { model: 'gemini-2.5-pro' } }));
+    writeFileSync(configPath, JSON.stringify({ gemini: { maxTimeoutMs: 1_800_000 } }));
 
     const cfg = getConfig();
-    expect(cfg.gemini.model).toBe('gemini-2.5-pro');
+    expect(cfg.gemini.maxTimeoutMs).toBe(1_800_000);
+    // unknown legacy keys (e.g. `model`) are silently stripped by Zod
   });
 });
 
@@ -146,14 +147,14 @@ describe('getConfig — error handling', () => {
     mkdirSync(tempDir, { recursive: true });
     writeFileSync(configPath, JSON.stringify({
       codex: { maxTimeoutMs: -1 },
-      gemini: { model: 'gemini-2.5-flash' },
+      gemini: { maxTimeoutMs: 900_000 },
     }));
 
     const cfg = getConfig();
     // Codex section falls back to defaults
     expect(cfg.codex).toEqual(DEFAULT_CONFIG.codex);
     // Gemini section survives — not nuked by codex error
-    expect(cfg.gemini.model).toBe('gemini-2.5-flash');
+    expect(cfg.gemini.maxTimeoutMs).toBe(900_000);
     // Claude untouched
     expect(cfg.claude).toEqual(DEFAULT_CONFIG.claude);
   });

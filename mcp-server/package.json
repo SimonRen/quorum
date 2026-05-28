@@ -1,6 +1,6 @@
 {
   "name": "@simonren/quorum",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "MCP server for Claude Code — a quorum of AI models (Codex, Gemini, Claude) for adversarial review and consultation, synthesized by Claude Code",
   "type": "module",
   "main": "dist/index.js",

@@ -42,9 +42,9 @@ Install at least one AI CLI:
 npm install -g @openai/codex-cli
 codex login
 
-# Google Gemini CLI
-npm install -g @google/gemini-cli
-gemini  # follow auth prompts
+# Google Gemini — via Antigravity CLI (`agy`). `gemini-cli` is sunset on 2026-06-18.
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+agy  # follow the Google OAuth flow
 ```
 
 ## Usage

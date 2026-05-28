@@ -76,17 +76,14 @@ export declare const ClaudeConfigSchema: z.ZodDefault<z.ZodObject<{
     maxBufferSize?: number | undefined;
 }>>;
 export declare const GeminiConfigSchema: z.ZodDefault<z.ZodObject<{
-    model: z.ZodDefault<z.ZodNullable<z.ZodString>>;
     inactivityTimeoutMs: z.ZodDefault<z.ZodNumber>;
     maxTimeoutMs: z.ZodDefault<z.ZodNumber>;
     maxBufferSize: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
-    model: string | null;
     inactivityTimeoutMs: number;
     maxTimeoutMs: number;
     maxBufferSize: number;
 }, {
-    model?: string | null | undefined;
     inactivityTimeoutMs?: number | undefined;
     maxTimeoutMs?: number | undefined;
     maxBufferSize?: number | undefined;
@@ -155,17 +152,14 @@ export declare const ConfigSchema: z.ZodDefault<z.ZodObject<{
         maxBufferSize?: number | undefined;
     }>>;
     gemini: z.ZodDefault<z.ZodObject<{
-        model: z.ZodDefault<z.ZodNullable<z.ZodString>>;
         inactivityTimeoutMs: z.ZodDefault<z.ZodNumber>;
         maxTimeoutMs: z.ZodDefault<z.ZodNumber>;
         maxBufferSize: z.ZodDefault<z.ZodNumber>;
     }, "strip", z.ZodTypeAny, {
-        model: string | null;
         inactivityTimeoutMs: number;
         maxTimeoutMs: number;
         maxBufferSize: number;
     }, {
-        model?: string | null | undefined;
         inactivityTimeoutMs?: number | undefined;
         maxTimeoutMs?: number | undefined;
         maxBufferSize?: number | undefined;
@@ -191,7 +185,6 @@ export declare const ConfigSchema: z.ZodDefault<z.ZodObject<{
         maxBufferSize: number;
     };
     gemini: {
-        model: string | null;
         inactivityTimeoutMs: number;
         maxTimeoutMs: number;
         maxBufferSize: number;
@@ -217,7 +210,6 @@ export declare const ConfigSchema: z.ZodDefault<z.ZodObject<{
         maxBufferSize?: number | undefined;
     } | undefined;
     gemini?: {
-        model?: string | null | undefined;
         inactivityTimeoutMs?: number | undefined;
         maxTimeoutMs?: number | undefined;
         maxBufferSize?: number | undefined;

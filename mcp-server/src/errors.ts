@@ -6,24 +6,25 @@ import { FeedbackError, CliType } from './types.js';
 
 // CLI installation commands
 // Codex: https://developers.openai.com/codex/cli/
-// Gemini: https://github.com/google-gemini/gemini-cli
+// Gemini: now ships as `agy` (Antigravity CLI) — https://antigravity.google/download
 const INSTALL_COMMANDS: Record<CliType, string> = {
   codex: 'npm install -g @openai/codex-cli',
-  gemini: 'npm install -g @google/gemini-cli',
+  gemini: 'curl -fsSL https://antigravity.google/cli/install.sh | bash',
   claude: 'https://docs.anthropic.com/en/docs/claude-code'
 };
 
-// Environment variables for API keys
-const ENV_VARS: Record<CliType, string> = {
+// Environment variables for API keys.
+// agy uses Google OAuth and has no env var — null surfaces "no key needed".
+const ENV_VARS: Record<CliType, string | null> = {
   codex: 'OPENAI_API_KEY',
-  gemini: 'GEMINI_API_KEY',
+  gemini: null,
   claude: 'ANTHROPIC_API_KEY'
 };
 
 // Authentication commands
 const AUTH_COMMANDS: Record<CliType, string> = {
   codex: 'codex login',
-  gemini: 'gemini (follow prompts)',
+  gemini: 'agy (complete Google OAuth)',
   claude: 'claude auth'
 };
 
@@ -126,13 +127,14 @@ ${retryMsg}
 
 Alternative: Use /${otherCli}-review instead`;
 
-    case 'auth_error':
+    case 'auth_error': {
+      const envVar = ENV_VARS[error.cli];
+      const keyLine = envVar ? `\nCheck your API key: ${envVar}` : '';
       return `🔐 ${error.cli} authentication failed.
 
-${error.message}
-
-Check your API key: ${ENV_VARS[error.cli]}
+${error.message}${keyLine}
 Run: ${AUTH_COMMANDS[error.cli]}`;
+    }
 
     case 'invalid_response':
       return `⚠️ ${error.cli} returned an unusable response.
@@ -215,8 +217,12 @@ export function getSuggestion(error: FeedbackError): string | undefined {
       return error.retryAfterMs
         ? `Wait ${Math.ceil(error.retryAfterMs / 1000)}s and retry`
         : 'Wait a moment and retry';
-    case 'auth_error':
-      return `Check your ${ENV_VARS[error.cli]} environment variable`;
+    case 'auth_error': {
+      const envVar = ENV_VARS[error.cli];
+      return envVar
+        ? `Check your ${envVar} environment variable`
+        : `Re-run \`${AUTH_COMMANDS[error.cli]}\` to refresh credentials`;
+    }
     case 'invalid_response':
       return 'Retry with a more specific focus area';
     case 'cli_error':

@@ -195,7 +195,7 @@ export async function handleMultiConsult(
     return {
       content: [{
         type: 'text',
-        text: '❌ No AI CLIs found.\n\nInstall at least one:\n  - Codex: npm install -g @openai/codex-cli\n  - Gemini: npm install -g @google/gemini-cli',
+        text: '❌ No AI CLIs found.\n\nInstall at least one:\n  - Codex: npm install -g @openai/codex-cli\n  - Gemini (agy): curl -fsSL https://antigravity.google/cli/install.sh | bash',
       }],
     };
   }

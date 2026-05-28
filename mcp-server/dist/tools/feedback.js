@@ -57,7 +57,7 @@ export async function handleMultiReview(input) {
     const request = toReviewRequest(input);
     const availableAdapters = await getAvailableAdapters();
     if (availableAdapters.length === 0) {
-        return { content: [{ type: 'text', text: '❌ No AI CLIs found.\n\nInstall at least one:\n  - Codex: npm install -g @openai/codex-cli\n  - Gemini: npm install -g @google/gemini-cli' }] };
+        return { content: [{ type: 'text', text: '❌ No AI CLIs found.\n\nInstall at least one:\n  - Codex: npm install -g @openai/codex-cli\n  - Gemini (agy): curl -fsSL https://antigravity.google/cli/install.sh | bash' }] };
     }
     // Spawn 2 reviews per adapter: standard + adversarial (all in parallel)
     // customPrompt steers the adversarial focus only — strip it from standard pass to avoid bias

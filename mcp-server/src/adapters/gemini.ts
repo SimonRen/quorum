@@ -1,9 +1,17 @@
 /**
- * Gemini CLI Adapter
+ * Gemini Adapter (via Antigravity CLI `agy`)
  *
- * Implements the ReviewerAdapter interface for Google's Gemini CLI.
- * Returns raw text — no JSON parsing or schema enforcement.
- * CC handles interpretation of the reviewer's response.
+ * Google replaced `gemini-cli` with the Antigravity CLI (`agy`) at I/O 2026.
+ * The free-tier `gemini` binary stops serving requests on 2026-06-18, so this
+ * adapter now spawns `agy --print` with the prompt on stdin. The model is still
+ * Gemini under the hood — only the CLI brand changed — so the adapter id and
+ * config key remain `gemini`.
+ *
+ * Differences from the old gemini-cli adapter:
+ *   - No `--output-format stream-json` → no live progress events
+ *   - No `--model` flag → model selection is done in agy's settings file
+ *   - `--include-directories` → `--add-dir`
+ *   - `--approval-mode plan` → folded into `--sandbox`
  */
 
 import { spawn } from 'child_process';
@@ -19,7 +27,6 @@ import {
   registerAdapter,
 } from './base.js';
 import { CliExecutor } from '../executor.js';
-import { GeminiEventDecoder } from '../decoders/index.js';
 import {
   buildSimpleHandoff,
   buildHandoffPrompt,
@@ -30,9 +37,7 @@ import {
 import { buildConsultPrompt } from '../consult-prompt.js';
 import { getConfig } from '../config.js';
 
-// =============================================================================
-// GEMINI ADAPTER
-// =============================================================================
+const AGY_INSTALL_CMD = 'curl -fsSL https://antigravity.google/cli/install.sh | bash';
 
 export class GeminiAdapter implements ReviewerAdapter {
   readonly id = 'gemini';
@@ -40,7 +45,7 @@ export class GeminiAdapter implements ReviewerAdapter {
   getCapabilities(): ReviewerCapabilities {
     return {
       name: 'Gemini',
-      description: 'Google Gemini - excels at architecture analysis, design patterns, and large codebase understanding',
+      description: 'Google Gemini (via Antigravity CLI) - excels at architecture analysis, design patterns, and large codebase understanding',
       strengths: ['architecture', 'maintainability', 'scalability', 'documentation'],
       weaknesses: ['security'],
       hasFilesystemAccess: true,
@@ -54,7 +59,7 @@ export class GeminiAdapter implements ReviewerAdapter {
     return new Promise((resolve) => {
       let settled = false;
       const done = (result: boolean) => { if (!settled) { settled = true; clearTimeout(timer); resolve(result); } };
-      const proc = spawn('gemini', ['--version'], {
+      const proc = spawn('agy', ['--version'], {
         stdio: ['ignore', 'pipe', 'pipe'],
       });
       proc.on('close', (code) => done(code === 0));
@@ -94,7 +99,7 @@ export class GeminiAdapter implements ReviewerAdapter {
       if (!result.stdout.trim()) {
         return {
           success: false,
-          error: { type: 'cli_error', message: 'Gemini returned empty response' },
+          error: { type: 'cli_error', message: 'agy returned empty response' },
           suggestion: 'Try again or use /multi-review instead',
           executionTimeMs: Date.now() - startTime,
         };
@@ -111,53 +116,33 @@ export class GeminiAdapter implements ReviewerAdapter {
     workingDir: string
   ): Promise<{ stdout: string; stderr: string; exitCode: number; truncated: boolean }> {
     const cfg = getConfig().gemini;
+    // agy requires the prompt as the positional after --print; passing only via
+    // stdin makes it print --help and exit 0. Sandbox keeps terminal-restricted
+    // execution like the old gemini-cli's `--approval-mode plan`.
     const args = [
       '--sandbox',
-      '--approval-mode', 'plan',
-      '--output-format', 'stream-json',
-      '--include-directories', workingDir,
-      '-p', '',
+      '--add-dir', workingDir,
+      '--print', prompt,
     ];
-    if (cfg.model) {
-      args.push('--model', cfg.model);
-    }
 
-    const decoder = new GeminiEventDecoder();
     const cliStartTime = Date.now();
-
-    console.error('[gemini] Running...');
-
-    decoder.onProgress = (eventType, detail) => {
-      const elapsed = Math.round((Date.now() - cliStartTime) / 1000);
-      const detailStr = detail ? ` — ${detail}` : '';
-      console.error(`[gemini] ${eventType}${detailStr} (${elapsed}s)`);
-    };
+    console.error('[gemini] Running agy...');
 
     const executor = new CliExecutor({
-      command: 'gemini',
+      command: 'agy',
       args,
       cwd: workingDir,
-      stdin: prompt,
       inactivityTimeoutMs: cfg.inactivityTimeoutMs,
       maxTimeoutMs: cfg.maxTimeoutMs,
       maxBufferSize: cfg.maxBufferSize,
-      onLine: (line: string) => {
-        decoder.processLine(line);
-      },
     });
 
     const result = await executor.run();
     const elapsed = Math.round((Date.now() - cliStartTime) / 1000);
     console.error(`[gemini] ✓ complete (${elapsed}s)`);
 
-    const finalResponse = decoder.getFinalResponse();
-
-    if (!finalResponse && result.exitCode === 0) {
-      return { stdout: '', stderr: 'Gemini produced no output — review may have failed silently', exitCode: 1, truncated: false };
-    }
-
     return {
-      stdout: finalResponse || '',
+      stdout: result.rawStdout,
       stderr: result.stderr,
       exitCode: result.exitCode,
       truncated: result.truncated,
@@ -167,11 +152,11 @@ export class GeminiAdapter implements ReviewerAdapter {
   private handleException(error: unknown, startTime: number): ReviewResult {
     const err = error as Error & { code?: string };
     if (err.code === 'ENOENT') {
-      return { success: false, error: { type: 'cli_not_found', message: 'Gemini CLI not found' },
-        suggestion: 'Install with: npm install -g @google/gemini-cli', executionTimeMs: Date.now() - startTime };
+      return { success: false, error: { type: 'cli_not_found', message: 'agy CLI not found' },
+        suggestion: `Install with: ${AGY_INSTALL_CMD}`, executionTimeMs: Date.now() - startTime };
     }
     if (err.message === 'TIMEOUT') {
-      return { success: false, error: { type: 'timeout', message: 'Gemini timed out — no events received' },
+      return { success: false, error: { type: 'timeout', message: 'agy timed out — no output received' },
         suggestion: 'Try a smaller scope or use /multi-review', executionTimeMs: Date.now() - startTime };
     }
     if (err.message === 'MAX_TIMEOUT') {
@@ -186,7 +171,7 @@ export class GeminiAdapter implements ReviewerAdapter {
     if (lower.includes('rate limit') || lower.includes('quota')) {
       return { type: 'rate_limit', message: `Rate limit or quota exceeded: ${stderr.slice(0, 500)}` };
     }
-    if (lower.includes('unauthorized') || lower.includes('authentication') || lower.includes('api key') || stderr.includes('401') || stderr.includes('403')) {
+    if (lower.includes('unauthorized') || lower.includes('authentication') || lower.includes('oauth') || stderr.includes('401') || stderr.includes('403')) {
       return { type: 'auth_error', message: `Authentication failed: ${stderr.slice(0, 500)}`, details: { stderr } };
     }
     return { type: 'cli_error', message: stderr.slice(0, 500) || 'Unknown error' };
@@ -195,8 +180,8 @@ export class GeminiAdapter implements ReviewerAdapter {
   private getSuggestion(error: ReviewError): string {
     switch (error.type) {
       case 'rate_limit': return 'Wait and retry, or use /multi-review instead';
-      case 'auth_error': return 'Run `gemini` and follow auth prompts, or set GEMINI_API_KEY';
-      case 'cli_not_found': return 'Install with: npm install -g @google/gemini-cli';
+      case 'auth_error': return 'Run `agy` and complete the Google OAuth sign-in';
+      case 'cli_not_found': return `Install with: ${AGY_INSTALL_CMD}`;
       default: return 'Check the error message and try again';
     }
   }
@@ -225,7 +210,7 @@ export class GeminiAdapter implements ReviewerAdapter {
       if (!result.stdout.trim()) {
         return {
           success: false,
-          error: { type: 'cli_error', message: 'Gemini returned empty response' },
+          error: { type: 'cli_error', message: 'agy returned empty response' },
           suggestion: 'Try again or use /multi-review instead',
           executionTimeMs: Date.now() - startTime,
         };
@@ -238,6 +223,5 @@ export class GeminiAdapter implements ReviewerAdapter {
   }
 }
 
-// Register the adapter
 registerAdapter(new GeminiAdapter());
 export const geminiAdapter = new GeminiAdapter();

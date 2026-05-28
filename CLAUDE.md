@@ -79,7 +79,8 @@ Markdown files that define user-facing commands (auto-installed to `~/.claude/co
 At least one must be installed:
 ```bash
 npm install -g @openai/codex-cli && codex login
-npm install -g @google/gemini-cli && gemini
+# Gemini ships as the Antigravity CLI (`agy`) — `gemini-cli` is sunset on 2026-06-18.
+curl -fsSL https://antigravity.google/cli/install.sh | bash && agy
 ```
 
 ## Testing

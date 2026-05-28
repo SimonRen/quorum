@@ -47,9 +47,11 @@ export const ClaudeConfigSchema = z
     maxBufferSize: z.number().int().positive().default(1_048_576),
 })
     .default({});
+// agy (Antigravity CLI) does not expose `--model`; model selection lives in
+// agy's own settings file. We keep the timeout/buffer knobs because CliExecutor
+// enforces them regardless of the underlying CLI.
 export const GeminiConfigSchema = z
     .object({
-    model: z.string().nullable().default('gemini-3.1-pro-preview'),
     inactivityTimeoutMs: z.number().int().positive().default(300_000),
     maxTimeoutMs: z.number().int().positive().default(3_600_000),
     maxBufferSize: z.number().int().positive().default(1_048_576),
