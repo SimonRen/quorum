@@ -1,8 +1,10 @@
 name: Publish to npm
 
+# Manual-only by design: new-package first publish can't use OIDC, and the
+# Makefile publishes from local. To publish via OIDC after configuring a
+# trusted publisher on npmjs.com:  gh workflow run publish.yml --ref vX.Y.Z
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
 
 jobs:
   publish:
